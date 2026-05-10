@@ -1,0 +1,177 @@
+[
+  {
+    "model": "saved_for_later.category",
+    "pk": 1,
+    "fields": { "name": "game" }
+  },
+  {
+    "model": "saved_for_later.category",
+    "pk": 2,
+    "fields": { "name": "movie" }
+  },
+  {
+    "model": "saved_for_later.category",
+    "pk": 3,
+    "fields": { "name": "tv show" }
+  },
+  {
+    "model": "saved_for_later.media",
+    "pk": 1,
+    "fields": {
+      "name": "Elden Ring",
+      "link": "https://en.bandainamcoent.eu/elden-ring/elden-ring",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/b/b9/Elden_Ring_Box_art.jpg",
+      "category": [1],
+      "summary": "An action RPG developed by FromSoftware set in a vast open world filled with challenging enemies and rich lore co-created with George R.R. Martin.",
+      "notes": "Won Game of the Year 2022. Notoriously difficult but rewarding.",
+      "date_created": "2024-01-01T10:00:00Z",
+      "last_accessed": "2024-03-15",
+      "counter": 12,
+      "display": true
+    }
+  },
+  {
+    "model": "saved_for_later.media",
+    "pk": 2,
+    "fields": {
+      "name": "Minecraft",
+      "link": "https://www.minecraft.net",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/5/51/Minecraft_cover.png",
+      "category": [1],
+      "summary": "A sandbox survival and creative game where players explore procedurally generated worlds, gather resources, and build structures. One of the best-selling games of all time.",
+      "notes": "Great for all ages. Java Edition recommended for mods.",
+      "date_created": "2024-01-05T12:00:00Z",
+      "last_accessed": "2024-03-20",
+      "counter": 30,
+      "display": true
+    }
+  },
+  {
+    "model": "saved_for_later.media",
+    "pk": 3,
+    "fields": {
+      "name": "The Shawshank Redemption",
+      "link": "https://www.imdb.com/title/tt0111161/",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg",
+      "category": [2],
+      "summary": "A 1994 drama film directed by Frank Darabont. Andy Dufresne, a banker wrongly convicted of murder, forms a friendship with fellow prisoner Red while enduring life in Shawshank prison.",
+      "notes": "Rated #1 on IMDb. A must-watch classic.",
+      "date_created": "2024-01-10T09:00:00Z",
+      "last_accessed": "2024-02-28",
+      "counter": 3,
+      "display": true
+    }
+  },
+  {
+    "model": "saved_for_later.media",
+    "pk": 4,
+    "fields": {
+      "name": "Interstellar",
+      "link": "https://www.imdb.com/title/tt0816692/",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/b/bc/Interstellar_film_poster.jpg",
+      "category": [2],
+      "summary": "A 2014 sci-fi epic directed by Christopher Nolan. A team of astronauts travels through a wormhole near Saturn in search of a new home for humanity.",
+      "notes": "Hans Zimmer's score is incredible. Best watched in IMAX.",
+      "date_created": "2024-01-15T14:00:00Z",
+      "last_accessed": "2024-03-01",
+      "counter": 7,
+      "display": true
+    }
+  },
+  {
+    "model": "saved_for_later.media",
+    "pk": 5,
+    "fields": {
+      "name": "Breaking Bad",
+      "link": "https://www.imdb.com/title/tt0903747/",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/a/a2/Breaking_Bad_title_card.png",
+      "category": [3],
+      "summary": "A chemistry teacher diagnosed with terminal cancer teams up with a former student to manufacture and sell methamphetamine to secure his family's future. Widely considered one of the greatest TV shows ever made.",
+      "notes": "Watch it all the way through, it just gets better. Do not skip.",
+      "date_created": "2024-01-20T08:00:00Z",
+      "last_accessed": "2024-03-25",
+      "counter": 99,
+      "display": true
+    }
+  },
+  {
+    "model": "saved_for_later.media",
+    "pk": 6,
+    "fields": {
+      "name": "God of War",
+      "link": "https://www.playstation.com/en-us/games/god-of-war/",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/a/a7/God_of_War_4_cover.jpg",
+      "category": [1],
+      "summary": "Kratos and his son Atreus journey through the Norse realms in this action-adventure game by Santa Monica Studio. A masterpiece of storytelling and combat.",
+      "notes": "One of PlayStation's best exclusives. The sequel Ragnarok is also incredible.",
+      "date_created": "2024-02-01T11:00:00Z",
+      "last_accessed": "2024-03-28",
+      "counter": 50,
+      "display": true
+    }
+  },
+  {
+    "model": "saved_for_later.media",
+    "pk": 7,
+    "fields": {
+      "name": "The Last of Us",
+      "link": "https://www.playstation.com/en-us/games/the-last-of-us-part-i/",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/4/46/Video_Game_Cover_-_The_Last_of_Us.jpg",
+      "category": [1],
+      "summary": "A post-apocalyptic action-adventure game by Naughty Dog. Joel smuggles 14-year-old Ellie across a ravaged United States. Now also a critically acclaimed HBO series.",
+      "notes": "One of the best stories ever told in a video game.",
+      "date_created": "2024-02-10T13:00:00Z",
+      "last_accessed": "2024-03-10",
+      "counter": 5,
+      "display": true
+    }
+  },
+  {
+    "model": "saved_for_later.media",
+    "pk": 8,
+    "fields": {
+      "name": "The Dark Knight",
+      "link": "https://www.imdb.com/title/tt0468569/",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/1/1c/The_Dark_Knight_%282008_film%29.jpg",
+      "category": [2],
+      "summary": "Christopher Nolan's 2008 superhero film in which Batman faces the Joker, a criminal mastermind who seeks to create chaos in Gotham City. Heath Ledger's performance is legendary.",
+      "notes": "Heath Ledger won a posthumous Oscar for his Joker. Still holds up perfectly.",
+      "date_created": "2024-02-15T16:00:00Z",
+      "last_accessed": "2024-03-29",
+      "counter": 20,
+      "display": true
+    }
+  },
+  {
+    "model": "saved_for_later.media",
+    "pk": 9,
+    "fields": {
+      "name": "Inception",
+      "link": "https://www.imdb.com/title/tt1375666/",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/2/2e/Inception_%282010%29_theatrical_poster.jpg",
+      "category": [2],
+      "summary": "A 2010 sci-fi thriller by Christopher Nolan. Dom Cobb specializes in entering people's dreams to steal secrets, but is offered a chance to have his record erased if he can plant an idea instead.",
+      "notes": "The ending is still debated. Watch it twice.",
+      "date_created": "2024-02-20T10:00:00Z",
+      "last_accessed": "2024-03-05",
+      "counter": 4,
+      "display": false
+    }
+  },
+  {
+    "model": "saved_for_later.media",
+    "pk": 10,
+    "fields": {
+      "name": "Stranger Things",
+      "link": "https://www.imdb.com/title/tt4574334/",
+      "image_url": "https://upload.wikimedia.org/wikipedia/en/9/95/Stranger_Things_season_4.jpg",
+      "category": [3],
+      "summary": "A Netflix sci-fi horror series set in the 1980s following a group of kids in Hawkins, Indiana who encounter supernatural forces and government conspiracies.",
+      "notes": "Season 1 and 4 are the best. Great 80s nostalgia and soundtrack.",
+      "date_created": "2024-03-01T09:00:00Z",
+      "last_accessed": "2024-03-29",
+      "counter": 88,
+      "display": true
+    }
+  }
+]

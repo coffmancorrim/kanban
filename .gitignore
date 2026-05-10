@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+myvenv/
+.env
+node_modules/
+static/js
+static/manifest.json
+db.sqlite3
+.DS_Store

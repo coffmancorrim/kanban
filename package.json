@@ -1,0 +1,31 @@
+{
+  "name": "sfl",
+  "version": "1.0.0",
+  "description": "create virtual venv `python -m venv venvNameGoesHere`",
+  "main": "vite.config.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coffmancorrim/DjangoViteReactBase.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/coffmancorrim/DjangoViteReactBase/issues"
+  },
+  "homepage": "https://github.com/coffmancorrim/DjangoViteReactBase#readme",
+  "dependencies": {
+    "@tanstack/react-query": "^5.100.9",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.1",
+    "vite": "^8.0.10"
+  }
+}

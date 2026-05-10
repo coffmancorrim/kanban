@@ -1,0 +1,11 @@
+{% load django_vite %}
+<html>
+  <head>
+    {% vite_hmr_client %} {% vite_react_refresh %}
+    <title>Kanban</title>
+    {% vite_asset 'assets/js/main.jsx' %}
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
