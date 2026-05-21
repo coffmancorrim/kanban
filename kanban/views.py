@@ -1,8 +1,9 @@
 from django.shortcuts import render
 
-from saved_for_later.models import Media
+
+def test(request):
+    return render(request, "kanban/test.html")
 
 
-# Create your views here.
 def home(request):
     return render(request, "saved_for_later/home.html")

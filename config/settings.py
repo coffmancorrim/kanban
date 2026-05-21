@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_vite",
     "rest_framework",
-    "saved_for_later",
     "kanban",
 ]
 
