@@ -1,10 +1,12 @@
-{% load django_vite %}
 <html>
   <head>
-    {% vite_hmr_client %} {% vite_react_refresh %}
     <title>Kanban</title>
   </head>
   <body>
-    testaaavvvvvvvvvvv
+    {% for list in lists %}
+    <h2>{{ list.name }}</h2>
+    {% for card in list.cards.all %}
+    <p>{{ card.description }}</p>
+    {% endfor %} {% endfor %}
   </body>
 </html>

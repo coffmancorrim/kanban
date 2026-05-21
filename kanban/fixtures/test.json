@@ -1,0 +1,87 @@
+[
+  {
+    "model": "kanban.board",
+    "pk": 1,
+    "fields": {
+      "name": "My Project",
+      "image_url": ""
+    }
+  },
+  {
+    "model": "kanban.list",
+    "pk": 1,
+    "fields": {
+      "name": "To Do",
+      "board": 1,
+      "position": 0
+    }
+  },
+  {
+    "model": "kanban.list",
+    "pk": 2,
+    "fields": {
+      "name": "In Progress",
+      "board": 1,
+      "position": 1
+    }
+  },
+  {
+    "model": "kanban.list",
+    "pk": 3,
+    "fields": {
+      "name": "Done",
+      "board": 1,
+      "position": 2
+    }
+  },
+  {
+    "model": "kanban.card",
+    "pk": 1,
+    "fields": {
+      "description": "Set up project structure",
+      "image_url": "",
+      "list": 1,
+      "position": 0
+    }
+  },
+  {
+    "model": "kanban.card",
+    "pk": 2,
+    "fields": {
+      "description": "Design database schema",
+      "image_url": "",
+      "list": 1,
+      "position": 1
+    }
+  },
+  {
+    "model": "kanban.card",
+    "pk": 3,
+    "fields": {
+      "description": "Build REST API endpoints",
+      "image_url": "",
+      "list": 2,
+      "position": 0
+    }
+  },
+  {
+    "model": "kanban.card",
+    "pk": 4,
+    "fields": {
+      "description": "Write unit tests",
+      "image_url": "",
+      "list": 2,
+      "position": 1
+    }
+  },
+  {
+    "model": "kanban.card",
+    "pk": 5,
+    "fields": {
+      "description": "Initialize git repo",
+      "image_url": "",
+      "list": 3,
+      "position": 0
+    }
+  }
+]
