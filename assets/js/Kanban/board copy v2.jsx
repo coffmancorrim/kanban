@@ -27,16 +27,6 @@ export default function Board() {
   );
 }
 
-function Draggable({ id = "draggable" }) {
-  const { ref } = useDraggable({ id });
-
-  return (
-    <button className="btn" ref={ref}>
-      Draggable
-    </button>
-  );
-}
-
 function Droppable({ id, children }) {
   const { ref, isDropTarget } = useDroppable({ id });
 
@@ -44,5 +34,15 @@ function Droppable({ id, children }) {
     <div ref={ref} className={`droppable${isDropTarget ? " active" : ""}`}>
       {children}
     </div>
+  );
+}
+
+function Draggable({ id = "draggable" }) {
+  const { ref } = useDraggable({ id });
+
+  return (
+    <button className="btn" ref={ref}>
+      Draggable
+    </button>
   );
 }

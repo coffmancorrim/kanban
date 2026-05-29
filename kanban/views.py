@@ -30,4 +30,4 @@ def test(request):
 
 
 def home(request):
-    return render(request, "saved_for_later/home.html")
+    return render(request, "kanban/home.html")

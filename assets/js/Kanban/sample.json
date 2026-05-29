@@ -1,0 +1,52 @@
+{
+  "id": 1,
+  "name": "My Project",
+  "lists": [
+    {
+      "id": 1,
+      "name": "To Do",
+      "position": 0,
+      "cards": [
+        {
+          "id": 1,
+          "description": "Set up project structure",
+          "position": 0
+        },
+        {
+          "id": 2,
+          "description": "Design database schema",
+          "position": 1
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "name": "In Progress",
+      "position": 1,
+      "cards": [
+        {
+          "id": 3,
+          "description": "Build REST API endpoints",
+          "position": 0
+        },
+        {
+          "id": 4,
+          "description": "Write unit tests",
+          "position": 1
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Done",
+      "position": 2,
+      "cards": [
+        {
+          "id": 5,
+          "description": "Initialize git repo",
+          "position": 0
+        }
+      ]
+    }
+  ]
+}
