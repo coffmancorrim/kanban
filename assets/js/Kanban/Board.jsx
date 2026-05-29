@@ -1,9 +1,36 @@
-import { useState } from "react";
-import board from "./sample.json";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
 export default function Board() {
+  async function fetchBoard(query) {
+    const response = await fetch(import.meta.env.VITE_BOARD_API_URL);
+    if (!response.ok) throw new Error("Failed to fetch board");
+    return await response.json();
+  }
+
+  const {
+    data: board = { lists: [] },
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["boards"],
+    queryFn: fetchBoard,
+  });
+
+  const [name, setName] = useState(board.name);
+
+  const [readOnly, setReadOnly] = useState(true);
+
+  if (error) return <p>{error.message}</p>;
+  if (isLoading) return <p>loading...</p>;
+
+  return <BoardContent board={board} />;
+}
+
+function BoardContent({ board }) {
   const [name, setName] = useState(board.name);
   const [readOnly, setReadOnly] = useState(true);
+
   return (
     <div>
       board:
@@ -15,7 +42,7 @@ export default function Board() {
       />
       <button onClick={() => setReadOnly(!readOnly)}>✏️</button>
       {board.lists.map((list) => (
-        <List list={list} />
+        <List list={list} key={list.id} />
       ))}
     </div>
   );
@@ -37,9 +64,7 @@ function List({ list }) {
       />
       <button onClick={() => setReadOnly(!readOnly)}>✏️</button>
       {list.cards.map((card) => (
-        <div>
-          <Card card={card} />
-        </div>
+        <Card card={card} key={card.id} />
       ))}
     </div>
   );
