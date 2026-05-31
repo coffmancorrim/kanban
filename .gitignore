@@ -7,3 +7,4 @@ static/js
 static/manifest.json
 db.sqlite3
 .DS_Store
+assets/js/Kanban/example.tsx

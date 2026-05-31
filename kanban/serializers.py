@@ -6,7 +6,7 @@ from .models import Board, Card, List
 class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Card
-        fields = ["id", "description", "position"]
+        fields = ["id", "description", "position", "list"]
 
 
 class ListSerializer(serializers.ModelSerializer):
