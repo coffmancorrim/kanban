@@ -4,9 +4,11 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
+const BASE_URL = import.meta.env.VITE_BOARD_API_URL;
+
 export default function Board() {
   async function fetchBoard(query) {
-    const response = await fetch(import.meta.env.VITE_BOARD_API_URL);
+    const response = await fetch(BASE_URL + "board/1");
     if (!response.ok) throw new Error("Failed to fetch board");
     return await response.json();
   }
@@ -36,6 +38,29 @@ function BoardContent({ board }) {
   const [allCards, setAllCards] = useState(
     board.lists.flatMap((list) => list.cards),
   );
+
+  const updateBoard = useMutation({
+    mutationFn: (updateBoard) => {
+      return fetch(BASE_URL + `board/${board.id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updateBoard),
+      });
+    },
+  });
+
+  function handleSubmit() {
+    if (readOnly === false) {
+      const editedBoard = {
+        name: name,
+      };
+      if (name !== board.name) {
+        updateBoard.mutate(editedBoard);
+      }
+    }
+
+    setReadOnly(!readOnly);
+  }
 
   return (
     <DragDropProvider
@@ -76,7 +101,7 @@ function BoardContent({ board }) {
         onChange={(e) => setName(e.target.value)}
         readOnly={readOnly}
       />
-      <button onClick={() => setReadOnly(!readOnly)}>✏️</button>
+      <button onClick={handleSubmit}>✏️</button>
       {board.lists.map((list) => (
         <List
           list={list}
@@ -89,14 +114,37 @@ function BoardContent({ board }) {
 }
 
 function List({ list, cards }) {
+  const [name, setName] = useState(list.name);
+  const [position, setPosition] = useState(list.position);
+  const [readOnly, setReadOnly] = useState(true);
+
   const { ref } = useDroppable({
     id: list.id,
     type: "list",
   });
 
-  const [name, setName] = useState(list.name);
-  const [position, setPosition] = useState(list.position);
-  const [readOnly, setReadOnly] = useState(true);
+  const updateList = useMutation({
+    mutationFn: (updatedList) => {
+      return fetch(BASE_URL + `list/${list.id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedList),
+      });
+    },
+  });
+
+  function handleSubmit() {
+    if (readOnly === false) {
+      const editedList = {
+        name: name,
+      };
+      if (name !== list.name) {
+        updateList.mutate(editedList);
+      }
+    }
+
+    setReadOnly(!readOnly);
+  }
 
   return (
     <div ref={ref}>
@@ -107,7 +155,7 @@ function List({ list, cards }) {
         onChange={(e) => setName(e.target.value)}
         readOnly={readOnly}
       />
-      <button onClick={() => setReadOnly(!readOnly)}>✏️</button>
+      <button onClick={handleSubmit}>✏️</button>
       {cards.map((card) => (
         <Card card={card} key={card.id} />
       ))}
@@ -121,15 +169,6 @@ function Card({ card }) {
   const [position, setPosition] = useState(card.position);
   const [readOnly, setReadOnly] = useState(true);
 
-  const updateCard = useMutation({
-    mutationFn: (updatedCard) => {
-      return fetch(`https://example.org/post/${card.id}`, {
-        method: "PATCH",
-        body: JSON.stringify(updatedCard),
-      });
-    },
-  });
-
   const { ref } = useSortable({
     id: card.id,
     index: card.position,
@@ -137,13 +176,26 @@ function Card({ card }) {
     group: "cards",
   });
 
+  const updateCard = useMutation({
+    mutationFn: (updatedCard) => {
+      return fetch(BASE_URL + `card/${card.id}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedCard),
+      });
+    },
+  });
+
   function handleSubmit() {
-    if (readOnly === false)
-      updateCard.mutate({
-        ...card,
+    if (readOnly === false) {
+      const editedCard = {
         description: description,
         imageUrl: imageUrl,
-      });
+      };
+      if (description !== card.description || imageUrl !== card.imageUrl) {
+        updateCard.mutate(editedCard);
+      }
+    }
 
     setReadOnly(!readOnly);
   }

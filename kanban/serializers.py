@@ -4,9 +4,13 @@ from .models import Board, Card, List
 
 
 class CardSerializer(serializers.ModelSerializer):
+    imageUrl = serializers.URLField(
+        source="image_url", required=False, allow_blank=True
+    )
+
     class Meta:
         model = Card
-        fields = ["id", "description", "position", "list"]
+        fields = ["id", "description", "position", "list", "imageUrl"]
 
 
 class ListSerializer(serializers.ModelSerializer):
