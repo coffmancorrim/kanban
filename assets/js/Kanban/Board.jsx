@@ -1,7 +1,7 @@
 import { move } from "@dnd-kit/helpers";
 import { DragDropProvider, useDraggable, useDroppable } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 
 export default function Board() {
@@ -50,18 +50,18 @@ function BoardContent({ board }) {
           const updated = move(cards, event);
 
           // if dropped on a list droppable (not a card), update the list field
-          const isDroppedOnList = board.lists.some((l) => l.id === target.id);
-          if (isDroppedOnList) {
-            return updated.map((card) =>
-              card.id === source.id ? { ...card, list: target.id } : card,
-            );
+          if (target.type === "list") {
+            return updated.map((card) => {
+              if (card.id !== source.id) return card;
+              const updatedCard = { ...card, list: target.id };
+              return updatedCard;
+            });
           }
 
           // if dropped on a card, inherit that card's list
-          const targetCard = cards.find((c) => c.id === target.id);
-          if (targetCard) {
+          if (target.type === "card") {
             return updated.map((card) =>
-              card.id === source.id ? { ...card, list: targetCard.list } : card,
+              card.id === source.id ? { ...card, list: target.list } : card,
             );
           }
 
@@ -91,6 +91,7 @@ function BoardContent({ board }) {
 function List({ list, cards }) {
   const { ref } = useDroppable({
     id: list.id,
+    type: "list",
   });
 
   const [name, setName] = useState(list.name);
@@ -120,11 +121,32 @@ function Card({ card }) {
   const [position, setPosition] = useState(card.position);
   const [readOnly, setReadOnly] = useState(true);
 
+  const updateCard = useMutation({
+    mutationFn: (updatedCard) => {
+      return fetch(`https://example.org/post/${card.id}`, {
+        method: "PATCH",
+        body: JSON.stringify(updatedCard),
+      });
+    },
+  });
+
   const { ref } = useSortable({
     id: card.id,
     index: card.position,
+    type: "card",
     group: "cards",
   });
+
+  function handleSubmit() {
+    if (readOnly === false)
+      updateCard.mutate({
+        ...card,
+        description: description,
+        imageUrl: imageUrl,
+      });
+
+    setReadOnly(!readOnly);
+  }
 
   return (
     <div ref={ref}>
@@ -142,7 +164,7 @@ function Card({ card }) {
         />
       )}
       {imageUrl && <img src={imageUrl} alt="" />}
-      <button onClick={() => setReadOnly(!readOnly)}>✏️</button>
+      <button onClick={handleSubmit}>✏️</button>
     </div>
   );
 }
