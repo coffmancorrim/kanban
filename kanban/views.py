@@ -40,6 +40,24 @@ def list_detail(request, pk):
         return Response(serializer.errors, status=400)
 
 
+@api_view(["POST"])
+def list_create(request):
+    serializer = ListSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+
+
+@api_view(["POST"])
+def card_create(request):
+    serializer = CardSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+
+
 @api_view(["GET", "PUT", "PATCH"])
 def card(request, pk):
     card = get_object_or_404(Card, pk=pk)
