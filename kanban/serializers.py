@@ -23,7 +23,10 @@ class ListSerializer(serializers.ModelSerializer):
 
 class BoardSerializer(serializers.ModelSerializer):
     lists = ListSerializer(many=True, read_only=True)
+    backgroundColor = serializers.CharField(
+        source="background_color", required=False, allow_blank=True
+    )
 
     class Meta:
         model = Board
-        fields = ["id", "name", "lists"]
+        fields = ["id", "name", "backgroundColor", "lists"]

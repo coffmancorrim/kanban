@@ -5,6 +5,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { isSortable } from "@dnd-kit/react/sortable";
 import { CollisionPriority } from "@dnd-kit/abstract";
+import "./styles.css";
 
 const BASE_URL = import.meta.env.VITE_BOARD_API_URL;
 
@@ -56,35 +57,43 @@ function applyDrag(board, sourceId, targetId, isAbove) {
   //get the location of the drag location (target) and the card itself
   //see if drag location general list or near a card
 
+  let updatedCard = null;
+
   //is list
   if (typeof targetId === "string") {
-    const targetListIndex = board.lists.findIndex(
+    const targetListIndex = newBoard.lists.findIndex(
       (list) => String(list.id) === String(targetId),
     );
 
     //add card to new position
     if (newBoard.lists[targetListIndex].cards.length === 0) {
-      newBoard.lists[targetListIndex].cards.push({
+      updatedCard = {
         ...sourceCard,
         position: 0,
-      });
+        list: newBoard.lists[targetListIndex].id,
+      };
+      newBoard.lists[targetListIndex].cards.push(updatedCard);
     } else if (isAbove) {
-      newBoard.lists[targetListIndex].cards.splice(0, 0, {
+      updatedCard = {
         ...sourceCard,
         position: newBoard.lists[targetListIndex].cards[0].position - 1,
-      });
+        list: newBoard.lists[targetListIndex].id,
+      };
+      newBoard.lists[targetListIndex].cards.splice(0, 0, updatedCard);
     } else {
       const lastCard =
         newBoard.lists[targetListIndex].cards[
           newBoard.lists[targetListIndex].cards.length - 1
         ];
-      newBoard.lists[targetListIndex].cards.push({
+      updatedCard = {
         ...sourceCard,
         position: lastCard.position + 1,
-      });
+        list: newBoard.lists[targetListIndex].id,
+      };
+      newBoard.lists[targetListIndex].cards.push(updatedCard);
     }
 
-    return newBoard;
+    return { updatedCard, newBoard };
   }
 
   // is card?
@@ -98,40 +107,61 @@ function applyDrag(board, sourceId, targetId, isAbove) {
     newBoard.lists[targetListIndex].cards[targetCardIndex].position;
   if (isAbove) {
     if (targetCardIndex === 0) {
-      newBoard.lists[targetListIndex].cards.splice(targetCardIndex, 0, {
+      updatedCard = {
         ...sourceCard,
         position: targetCardPosition - 1,
-      });
+        list: newBoard.lists[targetListIndex].id,
+      };
+      newBoard.lists[targetListIndex].cards.splice(
+        targetCardIndex,
+        0,
+        updatedCard,
+      );
     } else {
       const targetCardPosition2 =
         newBoard.lists[targetListIndex].cards[targetCardIndex - 1].position;
 
       const newPosition = (targetCardPosition + targetCardPosition2) / 2;
 
-      newBoard.lists[targetListIndex].cards.splice(targetCardIndex, 0, {
+      updatedCard = {
         ...sourceCard,
         position: newPosition,
-      });
+        list: newBoard.lists[targetListIndex].id,
+      };
+
+      newBoard.lists[targetListIndex].cards.splice(
+        targetCardIndex,
+        0,
+        updatedCard,
+      );
     }
   } else {
     if (targetCardIndex === newBoard.lists[targetListIndex].cards.length - 1) {
-      newBoard.lists[targetListIndex].cards.push({
+      updatedCard = {
         ...sourceCard,
         position: targetCardPosition + 1,
-      });
+        list: newBoard.lists[targetListIndex].id,
+      };
+      newBoard.lists[targetListIndex].cards.push(updatedCard);
     } else {
       const targetCardPosition2 =
         newBoard.lists[targetListIndex].cards[targetCardIndex + 1].position;
       const newPosition = (targetCardPosition + targetCardPosition2) / 2;
 
-      newBoard.lists[targetListIndex].cards.splice(targetCardIndex + 1, 0, {
+      updatedCard = {
         ...sourceCard,
         position: newPosition,
-      });
+        list: newBoard.lists[targetListIndex].id,
+      };
+      newBoard.lists[targetListIndex].cards.splice(
+        targetCardIndex + 1,
+        0,
+        updatedCard,
+      );
     }
   }
 
-  return newBoard;
+  return { updatedCard, newBoard };
 }
 
 export default function Board() {
@@ -159,6 +189,7 @@ export default function Board() {
 function BoardContent({ boardData }) {
   const [board, setBoard] = useState(boardData);
   const [name, setName] = useState(board.name);
+  const [backgroundColor, setBackgroundColor] = useState(board.backgroundColor);
   const [readOnly, setReadOnly] = useState(true);
 
   const updateBoard = useMutation({
@@ -175,8 +206,9 @@ function BoardContent({ boardData }) {
     if (readOnly === false) {
       const editedBoard = {
         name: name,
+        backgroundColor: backgroundColor,
       };
-      if (name !== board.name) {
+      if (name !== board.name || backgroundColor !== board.backgroundColor) {
         updateBoard.mutate(editedBoard);
       }
     }
@@ -242,46 +274,96 @@ function BoardContent({ boardData }) {
     await addCard.mutate(newCard);
   }
 
+  const updateCardPosition = useMutation({
+    mutationFn: async ({ cardId, cardPosition, cardList }) => {
+      console.log("Updating:", cardId, cardPosition);
+
+      const response = await fetch(BASE_URL + `card/${cardId}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          position: cardPosition,
+          list: cardList,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Update failed:", response.status);
+        throw new Error("Failed to update card position");
+      }
+
+      console.log("Update successful");
+      return response.json();
+    },
+  });
+
   return (
-    <DragDropProvider
-      onDragEnd={(event) => {
-        const sourceId = event.operation.source?.id;
-        const targetId = event.operation.target?.id ?? null;
+    <div style={{ backgroundColor: backgroundColor }}>
+      <DragDropProvider
+        onDragEnd={(event) => {
+          const sourceId = event.operation.source?.id;
+          const targetId = event.operation.target?.id ?? null;
 
-        console.log("___onDragEnd:");
-        console.log("TARGET:", event.operation.target);
+          console.log("___onDragEnd:");
+          console.log("TARGET:", event.operation.target);
 
-        if (event.canceled || targetId == null || sourceId == targetId) {
-          return;
-        }
+          if (event.canceled || targetId == null || sourceId == targetId) {
+            return;
+          }
 
-        const pointerY = event.operation.position.current.y;
-        const targetCenterY = event.operation.target?.shape?.center.y;
-        const isAbove = pointerY < targetCenterY;
+          const pointerY = event.operation.position.current.y;
+          const targetCenterY = event.operation.target?.shape?.center.y;
+          const isAbove = pointerY < targetCenterY;
 
-        console.log("Source:", sourceId);
-        console.log("Target:", targetId);
-        console.log("Pointer Y:", pointerY);
-        console.log("Target Center Y:", targetCenterY);
-        console.log("Difference:", pointerY - targetCenterY);
-        console.log("___Insert Above?", isAbove);
+          console.log("Source:", sourceId);
+          console.log("Target:", targetId);
+          console.log("Pointer Y:", pointerY);
+          console.log("Target Center Y:", targetCenterY);
+          console.log("Difference:", pointerY - targetCenterY);
+          console.log("___Insert Above?", isAbove);
 
-        setBoard((prev) => applyDrag(prev, sourceId, targetId, isAbove));
-      }}
-    >
-      board:
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        readOnly={readOnly}
-      />
-      <button onClick={handleSubmit}>✏️</button>
-      {board.lists.map((list) => (
-        <List list={list} key={list.id} onAddCard={handleAddCard} />
-      ))}
-      <button onClick={handleAddList}>add list</button>
-    </DragDropProvider>
+          const { updatedCard, newBoard } = applyDrag(
+            board,
+            sourceId,
+            targetId,
+            isAbove,
+          );
+
+          setBoard(newBoard);
+
+          updateCardPosition.mutate({
+            cardId: updatedCard.id,
+            cardPosition: updatedCard.position,
+            cardList: updatedCard.list,
+          });
+        }}
+      >
+        board:
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          readOnly={readOnly}
+        />
+        {!readOnly && (
+          <div>
+            <input
+              type="color"
+              id="background-color"
+              name="background-color"
+              value={backgroundColor}
+              onChange={(e) => setBackgroundColor(e.target.value)}
+            />
+            <label htmlFor="background-color">Background Color</label>
+          </div>
+        )}
+        <button onClick={handleSubmit}>✏️</button>
+        {board.lists.map((list) => (
+          <List list={list} key={list.id} onAddCard={handleAddCard} />
+        ))}
+        <button onClick={handleAddList}>add list</button>
+      </DragDropProvider>
+    </div>
   );
 }
 
