@@ -1,7 +1,7 @@
 import { move } from "@dnd-kit/helpers";
 import { DragDropProvider, useDraggable, useDroppable } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { isSortable } from "@dnd-kit/react/sortable";
 import { CollisionPriority } from "@dnd-kit/abstract";
@@ -171,6 +171,8 @@ export default function Board() {
     return await response.json();
   }
 
+  const queryClient = useQueryClient();
+
   const {
     data: boardData = { lists: [] },
     isLoading,
@@ -179,6 +181,26 @@ export default function Board() {
     queryKey: ["boards"],
     queryFn: fetchBoard,
   });
+
+  const updateBoardMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch(BASE_URL + "board/1/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!response.ok) throw new Error("board update failed");
+      return response.json();
+    },
+    onSuccess: (updatedBoard) => {
+      queryClient.setQueryData(["boards"], updatedBoard);
+    },
+  });
+
+  useEffect(() => {
+    if (boardData.updatedCount >= 3 && !updateBoardMutation.isPending) {
+      updateBoardMutation.mutate();
+    }
+  }, [boardData.updatedCount]);
 
   if (error) return <p>{error.message}</p>;
   if (isLoading) return <p>loading...</p>;
@@ -189,8 +211,15 @@ export default function Board() {
 function BoardContent({ boardData }) {
   const [board, setBoard] = useState(boardData);
   const [name, setName] = useState(board.name);
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState(
+    board.backgroundImageUrl,
+  );
   const [backgroundColor, setBackgroundColor] = useState(board.backgroundColor);
   const [readOnly, setReadOnly] = useState(true);
+
+  useEffect(() => {
+    setBoard(boardData);
+  }, [boardData]);
 
   const updateBoard = useMutation({
     mutationFn: (updateBoard) => {
@@ -207,8 +236,13 @@ function BoardContent({ boardData }) {
       const editedBoard = {
         name: name,
         backgroundColor: backgroundColor,
+        backgroundImageUrl: backgroundImageUrl,
       };
-      if (name !== board.name || backgroundColor !== board.backgroundColor) {
+      if (
+        name !== board.name ||
+        backgroundColor !== board.backgroundColor ||
+        backgroundImageUrl !== board.backgroundImageUrl
+      ) {
         updateBoard.mutate(editedBoard);
       }
     }
@@ -298,7 +332,12 @@ function BoardContent({ boardData }) {
   });
 
   return (
-    <div style={{ backgroundColor: backgroundColor }}>
+    <div
+      style={{
+        backgroundColor: backgroundColor,
+        backgroundImage: `url(${backgroundImageUrl})`,
+      }}
+    >
       <DragDropProvider
         onDragEnd={(event) => {
           const sourceId = event.operation.source?.id;
@@ -347,6 +386,7 @@ function BoardContent({ boardData }) {
         />
         {!readOnly && (
           <div>
+            <label htmlFor="background-color">Background Color: </label>
             <input
               type="color"
               id="background-color"
@@ -354,7 +394,16 @@ function BoardContent({ boardData }) {
               value={backgroundColor}
               onChange={(e) => setBackgroundColor(e.target.value)}
             />
-            <label htmlFor="background-color">Background Color</label>
+
+            <br></br>
+            <label htmlFor="background-image-url">Background Image: </label>
+            <input
+              id="background-image-url"
+              name="background-image-url"
+              value={backgroundImageUrl}
+              onChange={(e) => setBackgroundImageUrl(e.target.value)}
+              placeholder="put image link here"
+            />
           </div>
         )}
         <button onClick={handleSubmit}>✏️</button>
