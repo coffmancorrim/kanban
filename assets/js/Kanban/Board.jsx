@@ -2,12 +2,29 @@ import { move } from "@dnd-kit/helpers";
 import { DragDropProvider, useDraggable, useDroppable } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { isSortable } from "@dnd-kit/react/sortable";
-import { CollisionPriority } from "@dnd-kit/abstract";
 import "./styles.css";
+import { closestCorners } from "@dnd-kit/collision";
+import { CollisionType, CollisionPriority } from "@dnd-kit/abstract";
 
 const BASE_URL = import.meta.env.VITE_BOARD_API_URL;
+
+const noSelfCollision = ({ dragOperation, droppable }) => {
+  // ignore the item currently being dragged
+  if (dragOperation.source?.id === droppable.id) {
+    return null;
+  }
+
+  if (!droppable.shape) {
+    return null;
+  }
+
+  return closestCorners({
+    dragOperation,
+    droppable,
+  });
+};
 
 function findListAndCardIndex(board, cardId) {
   console.log("---FIND_LIST_CARD_INDEX");
@@ -197,7 +214,7 @@ export default function Board() {
   });
 
   useEffect(() => {
-    if (boardData.updatedCount >= 3 && !updateBoardMutation.isPending) {
+    if (boardData.updatedCount >= 100 && !updateBoardMutation.isPending) {
       updateBoardMutation.mutate();
     }
   }, [boardData.updatedCount]);
@@ -216,6 +233,9 @@ function BoardContent({ boardData }) {
   );
   const [backgroundColor, setBackgroundColor] = useState(board.backgroundColor);
   const [readOnly, setReadOnly] = useState(true);
+
+  const snapshotRef = useRef(null);
+  const lastTargetRef = useRef({ id: null, isAbove: null });
 
   useEffect(() => {
     setBoard(boardData);
@@ -339,14 +359,26 @@ function BoardContent({ boardData }) {
       }}
     >
       <DragDropProvider
-        onDragEnd={(event) => {
+        onDragStart={() => {
+          console.log("[DragStart]", {
+            board,
+          });
+
+          snapshotRef.current = board;
+          lastTargetRef.current = { id: null, isAbove: null };
+        }}
+        onDragOver={(event) => {
           const sourceId = event.operation.source?.id;
           const targetId = event.operation.target?.id ?? null;
 
-          console.log("___onDragEnd:");
-          console.log("TARGET:", event.operation.target);
-
-          if (event.canceled || targetId == null || sourceId == targetId) {
+          if (!targetId || sourceId === targetId) {
+            console.log(
+              "[DragOver] Early return: invalid target or same source",
+              {
+                sourceId,
+                targetId,
+              },
+            );
             return;
           }
 
@@ -354,27 +386,82 @@ function BoardContent({ boardData }) {
           const targetCenterY = event.operation.target?.shape?.center.y;
           const isAbove = pointerY < targetCenterY;
 
-          console.log("Source:", sourceId);
-          console.log("Target:", targetId);
-          console.log("Pointer Y:", pointerY);
-          console.log("Target Center Y:", targetCenterY);
-          console.log("Difference:", pointerY - targetCenterY);
-          console.log("___Insert Above?", isAbove);
+          // skip only if BOTH target and side are the same
+          if (
+            targetId === lastTargetRef.current.id &&
+            isAbove === lastTargetRef.current.isAbove
+          ) {
+            console.log("[DragOver] Early return: same target and side", {
+              targetId,
+              isAbove,
+              lastTarget: lastTargetRef.current,
+            });
+            return;
+          }
 
-          const { updatedCard, newBoard } = applyDrag(
-            board,
+          console.log("[DragOver] Applying drag", {
+            sourceId,
+            targetId,
+            pointerY,
+            targetCenterY,
+            isAbove,
+          });
+
+          lastTargetRef.current = { id: targetId, isAbove };
+
+          const { newBoard } = applyDrag(
+            snapshotRef.current,
             sourceId,
             targetId,
             isAbove,
           );
+          setBoard(newBoard);
+        }}
+        onDragEnd={(event) => {
+          const sourceId = event.operation.source?.id;
+          const targetId = event.operation.target?.id ?? null;
 
+          if (event.canceled || !targetId || sourceId == targetId) {
+            console.log("[DragEnd] Restoring snapshot", {
+              canceled: event.canceled,
+              sourceId,
+              targetId,
+            });
+
+            setBoard(snapshotRef.current); // restore on cancel
+            return;
+          }
+
+          const pointerY = event.operation.position.current.y;
+          const targetCenterY = event.operation.target?.shape?.center.y;
+          const isAbove = pointerY < targetCenterY;
+
+          console.log("[DragEnd] Final applyDrag", {
+            sourceId,
+            targetId,
+            pointerY,
+            targetCenterY,
+            isAbove,
+          });
+
+          const { updatedCard, newBoard } = applyDrag(
+            snapshotRef.current,
+            sourceId,
+            targetId,
+            isAbove,
+          );
           setBoard(newBoard);
 
-          updateCardPosition.mutate({
-            cardId: updatedCard.id,
-            cardPosition: updatedCard.position,
-            cardList: updatedCard.list,
-          });
+          // updateCardPosition.mutate({
+          //   cardId: updatedCard.id,
+          //   cardPosition: updatedCard.position,
+          //   cardList: updatedCard.list,
+          // });
+
+          console.log("[DragEnd] Clearing refs");
+
+          snapshotRef.current = null;
+          lastTargetRef.current = null;
         }}
       >
         board:
@@ -423,6 +510,8 @@ function List({ list, onAddCard }) {
 
   const { ref } = useDroppable({
     id: String(list.id),
+
+    collisionDetector: noSelfCollision,
   });
 
   const updateList = useMutation({
@@ -486,6 +575,8 @@ function Card({ card, index }) {
   const { ref, isDragSource } = useSortable({
     id: card.id,
     index: index,
+
+    collisionDetector: noSelfCollision,
   });
 
   const updateCard = useMutation({
@@ -513,7 +604,10 @@ function Card({ card, index }) {
   }
 
   return (
-    <div ref={ref} style={{ backgroundColor: "green", padding: 5, margin: 5 }}>
+    <div
+      ref={ref}
+      style={{ backgroundColor: "green", padding: 5, marginTop: 0 }}
+    >
       card:
       <input
         value={description}
