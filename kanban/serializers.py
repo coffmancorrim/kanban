@@ -25,6 +25,15 @@ class ListSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "position", "cards", "board"]
 
 
+class BoardsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Board
+        fields = [
+            "id",
+            "name",
+        ]
+
+
 class BoardSerializer(serializers.ModelSerializer):
     lists = ListSerializer(many=True, read_only=True)
 

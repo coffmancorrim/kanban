@@ -10,6 +10,47 @@ import { CollisionType, CollisionPriority } from "@dnd-kit/abstract";
 
 const BASE_URL = import.meta.env.VITE_BOARD_API_URL;
 
+export default function Boards() {
+  const [activeBoard, setActiveBoard] = useState(null);
+
+  const {
+    data: boards = [],
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["boards"],
+    queryFn: fetchBoards,
+  });
+
+  async function fetchBoards(query) {
+    const response = await fetch(BASE_URL + `boards/`);
+    if (!response.ok) throw new Error("Failed to fetch boards");
+    return await response.json();
+  }
+
+  if (isLoading) {
+    return <p>Loading boards...</p>;
+  }
+
+  if (error) {
+    return <p>Error loading boards</p>;
+  }
+
+  return (
+    <div>
+      {activeBoard ? (
+        <Board boardId={activeBoard} setActiveBoard={setActiveBoard} />
+      ) : (
+        boards.map((board) => (
+          <button onClick={(e) => setActiveBoard(board.id)} key={board.id}>
+            {board.name}
+          </button>
+        ))
+      )}
+    </div>
+  );
+}
+
 const noSelfCollision = ({ dragOperation, droppable }) => {
   // ignore the item currently being dragged
   if (dragOperation.source?.id === droppable.id) {
@@ -181,9 +222,9 @@ function applyDrag(board, sourceId, targetId, isAbove) {
   return { updatedCard, newBoard };
 }
 
-export default function Board() {
+function Board({ boardId, setActiveBoard }) {
   async function fetchBoard(query) {
-    const response = await fetch(BASE_URL + "board/1");
+    const response = await fetch(BASE_URL + `board/${boardId}`);
     if (!response.ok) throw new Error("Failed to fetch board");
     return await response.json();
   }
@@ -195,13 +236,13 @@ export default function Board() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["boards"],
+    queryKey: ["board"],
     queryFn: fetchBoard,
   });
 
   const updateBoardMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(BASE_URL + "board/1/", {
+      const response = await fetch(BASE_URL + `board/${boardId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       });
@@ -209,7 +250,7 @@ export default function Board() {
       return response.json();
     },
     onSuccess: (updatedBoard) => {
-      queryClient.setQueryData(["boards"], updatedBoard);
+      queryClient.setQueryData(["board"], updatedBoard);
     },
   });
 
@@ -222,10 +263,10 @@ export default function Board() {
   if (error) return <p>{error.message}</p>;
   if (isLoading) return <p>loading...</p>;
 
-  return <BoardContent boardData={boardData} />;
+  return <BoardContent boardData={boardData} setActiveBoard={setActiveBoard} />;
 }
 
-function BoardContent({ boardData }) {
+function BoardContent({ boardData, setActiveBoard }) {
   const [board, setBoard] = useState(boardData);
   const [name, setName] = useState(board.name);
   const [backgroundImageUrl, setBackgroundImageUrl] = useState(
@@ -523,6 +564,7 @@ function BoardContent({ boardData }) {
           lastTargetRef.current = null;
         }}
       >
+        <button onClick={(e) => setActiveBoard()}>🔙</button>
         board:
         <input
           type="text"

@@ -4,7 +4,21 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import Board, Card, List
-from .serializers import BoardSerializer, CardSerializer, ListSerializer
+from .serializers import (
+    BoardSerializer,
+    BoardsSerializer,
+    CardSerializer,
+    ListSerializer,
+)
+
+
+@api_view(["GET", "PUT", "PATCH", "POST", "DELETE"])
+def boards(request):
+
+    if request.method == "GET":
+        boards = Board.objects.all()
+        serializer = BoardsSerializer(boards, many=True)
+        return Response(serializer.data)
 
 
 @api_view(["GET", "PUT", "PATCH", "POST", "DELETE"])
