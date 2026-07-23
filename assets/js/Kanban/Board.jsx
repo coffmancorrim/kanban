@@ -7,49 +7,8 @@ import { isSortable } from "@dnd-kit/react/sortable";
 import "./styles.css";
 import { closestCorners } from "@dnd-kit/collision";
 import { CollisionType, CollisionPriority } from "@dnd-kit/abstract";
-
-const BASE_URL = import.meta.env.VITE_BOARD_API_URL;
-
-export default function Boards() {
-  const [activeBoard, setActiveBoard] = useState(null);
-
-  const {
-    data: boards = [],
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["boards"],
-    queryFn: fetchBoards,
-  });
-
-  async function fetchBoards(query) {
-    const response = await fetch(BASE_URL + `boards/`);
-    if (!response.ok) throw new Error("Failed to fetch boards");
-    return await response.json();
-  }
-
-  if (isLoading) {
-    return <p>Loading boards...</p>;
-  }
-
-  if (error) {
-    return <p>Error loading boards</p>;
-  }
-
-  return (
-    <div>
-      {activeBoard ? (
-        <Board boardId={activeBoard} setActiveBoard={setActiveBoard} />
-      ) : (
-        boards.map((board) => (
-          <button onClick={(e) => setActiveBoard(board.id)} key={board.id}>
-            {board.name}
-          </button>
-        ))
-      )}
-    </div>
-  );
-}
+import { BASE_URL } from "./config.jsx";
+import { Link } from "@tanstack/react-router";
 
 const noSelfCollision = ({ dragOperation, droppable }) => {
   // ignore the item currently being dragged
@@ -222,7 +181,7 @@ function applyDrag(board, sourceId, targetId, isAbove) {
   return { updatedCard, newBoard };
 }
 
-function Board({ boardId, setActiveBoard }) {
+export function Board({ boardId }) {
   async function fetchBoard(query) {
     const response = await fetch(BASE_URL + `board/${boardId}`);
     if (!response.ok) throw new Error("Failed to fetch board");
@@ -263,10 +222,10 @@ function Board({ boardId, setActiveBoard }) {
   if (error) return <p>{error.message}</p>;
   if (isLoading) return <p>loading...</p>;
 
-  return <BoardContent boardData={boardData} setActiveBoard={setActiveBoard} />;
+  return <BoardContent boardData={boardData} />;
 }
 
-function BoardContent({ boardData, setActiveBoard }) {
+function BoardContent({ boardData }) {
   const [board, setBoard] = useState(boardData);
   const [name, setName] = useState(board.name);
   const [backgroundImageUrl, setBackgroundImageUrl] = useState(
@@ -564,7 +523,7 @@ function BoardContent({ boardData, setActiveBoard }) {
           lastTargetRef.current = null;
         }}
       >
-        <button onClick={(e) => setActiveBoard()}>🔙</button>
+        <Link to="/">🔙</Link>
         board:
         <input
           type="text"

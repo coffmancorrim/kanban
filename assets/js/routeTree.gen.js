@@ -10,14 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as KanbanBoardIdRouteImport } from './routes/kanban/$boardId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 })
+const KanbanBoardIdRoute = KanbanBoardIdRouteImport.update({
+  id: '/kanban/$boardId',
+  path: '/kanban/$boardId',
+  getParentRoute: () => rootRouteImport,
+})
 
 const rootRouteChildren = {
   IndexRoute: IndexRoute,
+  KanbanBoardIdRoute: KanbanBoardIdRoute,
 }
 export const routeTree = rootRouteImport._addFileChildren(rootRouteChildren)
