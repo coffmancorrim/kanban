@@ -328,6 +328,65 @@ function BoardContent({ boardData }) {
     await addCard.mutate(newCard);
   }
 
+  const deleteCard = useMutation({
+    mutationFn: async (card) => {
+      const response = await fetch(BASE_URL + `card/${card.id}/`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete card: ${response.status}`);
+      }
+
+      return card;
+    },
+
+    onSuccess: (cardToDelete) => {
+      setBoard((previousBoard) => ({
+        ...previousBoard,
+        lists: previousBoard.lists.map((list) =>
+          list.id == cardToDelete.list
+            ? {
+                ...list,
+                cards: list.cards.filter((card) => card.id !== cardToDelete.id),
+              }
+            : list,
+        ),
+      }));
+    },
+  });
+
+  async function handleDeleteCard(card) {
+    await deleteCard.mutate(card);
+  }
+
+  const deleteList = useMutation({
+    mutationFn: async (listId) => {
+      const response = await fetch(BASE_URL + `list/${listId}/`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to delete card: ${response.status}`);
+      }
+
+      return listId;
+    },
+
+    onSuccess: (listId) => {
+      setBoard((previousBoard) => ({
+        ...previousBoard,
+        lists: previousBoard.lists.filter((list) => list.id != listId),
+      }));
+    },
+  });
+
+  async function handleDeleteList(listId) {
+    await deleteList.mutate(listId);
+  }
+
   const updateCardPosition = useMutation({
     mutationFn: async ({ cardId, cardPosition, cardList }) => {
       console.log("Updating:", cardId, cardPosition);
@@ -452,11 +511,11 @@ function BoardContent({ boardData }) {
           );
           setBoard(newBoard);
 
-          // updateCardPosition.mutate({
-          //   cardId: updatedCard.id,
-          //   cardPosition: updatedCard.position,
-          //   cardList: updatedCard.list,
-          // });
+          updateCardPosition.mutate({
+            cardId: updatedCard.id,
+            cardPosition: updatedCard.position,
+            cardList: updatedCard.list,
+          });
 
           console.log("[DragEnd] Clearing refs");
 
@@ -495,7 +554,13 @@ function BoardContent({ boardData }) {
         )}
         <button onClick={handleSubmit}>✏️</button>
         {board.lists.map((list) => (
-          <List list={list} key={list.id} onAddCard={handleAddCard} />
+          <List
+            list={list}
+            key={list.id}
+            onAddCard={handleAddCard}
+            onDeleteCard={handleDeleteCard}
+            onDeleteList={handleDeleteList}
+          />
         ))}
         <button onClick={handleAddList}>add list</button>
       </DragDropProvider>
@@ -503,7 +568,7 @@ function BoardContent({ boardData }) {
   );
 }
 
-function List({ list, onAddCard }) {
+function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
   const [name, setName] = useState(list.name);
   const [position, setPosition] = useState(list.position);
   const [readOnly, setReadOnly] = useState(true);
@@ -557,17 +622,23 @@ function List({ list, onAddCard }) {
         }}
       >
         {list.cards.map((card, index) => (
-          <Card card={card} key={card.id} index={index} />
+          <Card
+            card={card}
+            key={card.id}
+            index={index}
+            onDeleteCard={onDeleteCard}
+          />
         ))}
       </div>
       <button onClick={() => onAddCard(list.id, list.cards.length)}>
         add card
       </button>
+      <button onClick={() => onDeleteList(list.id)}>delete list</button>
     </div>
   );
 }
 
-function Card({ card, index }) {
+function Card({ card, index, onDeleteCard }) {
   const [description, setDescription] = useState(card.description);
   const [imageUrl, setImageUrl] = useState(card.imageUrl);
   const [readOnly, setReadOnly] = useState(true);
@@ -623,6 +694,7 @@ function Card({ card, index }) {
       )}
       {imageUrl && <img src={imageUrl} alt="" />}
       <button onClick={handleSubmit}>✏️</button>
+      <button onClick={(e) => onDeleteCard(card)}>❌</button>
       position: {card.position}
     </div>
   );

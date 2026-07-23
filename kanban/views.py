@@ -7,7 +7,7 @@ from .models import Board, Card, List
 from .serializers import BoardSerializer, CardSerializer, ListSerializer
 
 
-@api_view(["GET", "PUT", "PATCH", "POST"])
+@api_view(["GET", "PUT", "PATCH", "POST", "DELETE"])
 def board(request, pk):
     board = get_object_or_404(Board.objects.prefetch_related("lists__cards"), pk=pk)
 
@@ -34,8 +34,12 @@ def board(request, pk):
         board = get_object_or_404(Board.objects.prefetch_related("lists__cards"), pk=pk)
         return Response(BoardSerializer(board).data)
 
+    if request.method == "DELETE":
+        board.delete()
+        return Response(status=200)
 
-@api_view(["GET", "PUT", "PATCH"])
+
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
 def list_detail(request, pk):
     list = get_object_or_404(List, pk=pk)
 
@@ -50,6 +54,10 @@ def list_detail(request, pk):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+    if request.method == "DELETE":
+        list.delete()
+        return Response(status=200)
 
 
 @api_view(["POST"])
@@ -70,7 +78,7 @@ def card_create(request):
     return Response(serializer.errors, status=400)
 
 
-@api_view(["GET", "PUT", "PATCH"])
+@api_view(["GET", "PUT", "PATCH", "DELETE"])
 def card(request, pk):
     card = get_object_or_404(Card, pk=pk)
 
@@ -91,6 +99,10 @@ def card(request, pk):
 
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
+
+    if request.method == "DELETE":
+        card.delete()
+        return Response(status=200)
 
 
 def test(request):
