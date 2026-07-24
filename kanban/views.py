@@ -1,6 +1,8 @@
+from django.contrib.auth.decorators import login_required
 from django.db.models import F
 from django.shortcuts import get_object_or_404, render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Board, Card, List
@@ -13,8 +15,8 @@ from .serializers import (
 
 
 @api_view(["GET", "PUT", "PATCH", "POST", "DELETE"])
+@permission_classes([IsAuthenticated])
 def boards(request):
-
     if request.method == "GET":
         boards = Board.objects.all()
         serializer = BoardsSerializer(boards, many=True)
@@ -22,6 +24,7 @@ def boards(request):
 
 
 @api_view(["GET", "PUT", "PATCH", "POST", "DELETE"])
+@permission_classes([IsAuthenticated])
 def board(request, pk):
     board = get_object_or_404(Board.objects.prefetch_related("lists__cards"), pk=pk)
 
@@ -54,6 +57,7 @@ def board(request, pk):
 
 
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
+@permission_classes([IsAuthenticated])
 def list_detail(request, pk):
     list = get_object_or_404(List, pk=pk)
 
@@ -74,25 +78,8 @@ def list_detail(request, pk):
         return Response(status=200)
 
 
-@api_view(["POST"])
-def list_create(request):
-    serializer = ListSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=201)
-    return Response(serializer.errors, status=400)
-
-
-@api_view(["POST"])
-def card_create(request):
-    serializer = CardSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=201)
-    return Response(serializer.errors, status=400)
-
-
 @api_view(["GET", "PUT", "PATCH", "DELETE"])
+@permission_classes([IsAuthenticated])
 def card(request, pk):
     card = get_object_or_404(Card, pk=pk)
 
@@ -119,21 +106,36 @@ def card(request, pk):
         return Response(status=200)
 
 
-def test(request):
-    board = get_object_or_404(Board, pk=1)
-    lists = (
-        List.objects.filter(board=board).prefetch_related("cards").order_by("position")
-    )
-
-    return render(
-        request,
-        "kanban/test.html",
-        {
-            "board": board,
-            "lists": lists,
-        },
-    )
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def board_create(request):
+    serializer = BoardSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
 
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def list_create(request):
+    serializer = ListSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def card_create(request):
+    serializer = CardSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=201)
+    return Response(serializer.errors, status=400)
+
+
+@login_required
 def home(request):
     return render(request, "kanban/home.html")

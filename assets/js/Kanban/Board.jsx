@@ -1,185 +1,11 @@
-import { move } from "@dnd-kit/helpers";
-import { DragDropProvider, useDraggable, useDroppable } from "@dnd-kit/react";
-import { useSortable } from "@dnd-kit/react/sortable";
+import { DragDropProvider } from "@dnd-kit/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { isSortable } from "@dnd-kit/react/sortable";
 import "./styles.css";
-import { closestCorners } from "@dnd-kit/collision";
-import { CollisionType, CollisionPriority } from "@dnd-kit/abstract";
-import { BASE_URL } from "./config.jsx";
+import { BASE_URL, getCookie } from "./config.jsx";
 import { Link } from "@tanstack/react-router";
-
-const noSelfCollision = ({ dragOperation, droppable }) => {
-  // ignore the item currently being dragged
-  if (dragOperation.source?.id === droppable.id) {
-    return null;
-  }
-
-  if (!droppable.shape) {
-    return null;
-  }
-
-  return closestCorners({
-    dragOperation,
-    droppable,
-  });
-};
-
-function findListAndCardIndex(board, cardId) {
-  console.log("---FIND_LIST_CARD_INDEX");
-  console.log("Card ID:", cardId);
-
-  if (!board) return;
-
-  for (let listIndex = 0; listIndex < board.lists.length; listIndex++) {
-    const cardIndex = board.lists[listIndex].cards.findIndex(
-      (card) => card.id === cardId,
-    );
-
-    if (cardIndex !== -1) {
-      console.log("List Index:", listIndex);
-      console.log("Card Index:", cardIndex);
-      return [listIndex, cardIndex];
-    }
-  }
-
-  console.log("ERROR");
-  return null;
-}
-
-function applyDrag(board, sourceId, targetId, isAbove) {
-  console.log("APPLY_DRAG FUNCTION");
-  console.log("INITAL BOARD LISTS:", board.lists);
-  console.log("Source ID:", sourceId);
-  console.log("Target ID:", targetId);
-
-  //clone the board
-  const newBoard = {
-    ...board,
-    lists: board.lists.map((list) => ({ ...list, cards: [...list.cards] })),
-  };
-
-  //get the card location that started the drag (source) and the card itself
-  const [sourceListIndex, sourceCardIndex] = findListAndCardIndex(
-    newBoard,
-    sourceId,
-  );
-  const sourceCard = newBoard.lists[sourceListIndex].cards[sourceCardIndex];
-  console.log("source card:", sourceCard);
-
-  //remove the source card from the cloned board
-  newBoard.lists[sourceListIndex].cards.splice(sourceCardIndex, 1);
-
-  //get the location of the drag location (target) and the card itself
-  //see if drag location general list or near a card
-
-  let updatedCard = null;
-
-  //is list
-  if (typeof targetId === "string") {
-    const targetListIndex = newBoard.lists.findIndex(
-      (list) => String(list.id) === String(targetId),
-    );
-
-    //add card to new position
-    if (newBoard.lists[targetListIndex].cards.length === 0) {
-      updatedCard = {
-        ...sourceCard,
-        position: 0,
-        list: newBoard.lists[targetListIndex].id,
-      };
-      newBoard.lists[targetListIndex].cards.push(updatedCard);
-    } else if (isAbove) {
-      updatedCard = {
-        ...sourceCard,
-        position: newBoard.lists[targetListIndex].cards[0].position - 1,
-        list: newBoard.lists[targetListIndex].id,
-      };
-      newBoard.lists[targetListIndex].cards.splice(0, 0, updatedCard);
-    } else {
-      const lastCard =
-        newBoard.lists[targetListIndex].cards[
-          newBoard.lists[targetListIndex].cards.length - 1
-        ];
-      updatedCard = {
-        ...sourceCard,
-        position: lastCard.position + 1,
-        list: newBoard.lists[targetListIndex].id,
-      };
-      newBoard.lists[targetListIndex].cards.push(updatedCard);
-    }
-
-    return { updatedCard, newBoard };
-  }
-
-  // is card?
-  const [targetListIndex, targetCardIndex] = findListAndCardIndex(
-    newBoard,
-    targetId,
-  );
-
-  // add card to new position
-  const targetCardPosition =
-    newBoard.lists[targetListIndex].cards[targetCardIndex].position;
-  if (isAbove) {
-    if (targetCardIndex === 0) {
-      updatedCard = {
-        ...sourceCard,
-        position: targetCardPosition - 1,
-        list: newBoard.lists[targetListIndex].id,
-      };
-      newBoard.lists[targetListIndex].cards.splice(
-        targetCardIndex,
-        0,
-        updatedCard,
-      );
-    } else {
-      const targetCardPosition2 =
-        newBoard.lists[targetListIndex].cards[targetCardIndex - 1].position;
-
-      const newPosition = (targetCardPosition + targetCardPosition2) / 2;
-
-      updatedCard = {
-        ...sourceCard,
-        position: newPosition,
-        list: newBoard.lists[targetListIndex].id,
-      };
-
-      newBoard.lists[targetListIndex].cards.splice(
-        targetCardIndex,
-        0,
-        updatedCard,
-      );
-    }
-  } else {
-    if (targetCardIndex === newBoard.lists[targetListIndex].cards.length - 1) {
-      updatedCard = {
-        ...sourceCard,
-        position: targetCardPosition + 1,
-        list: newBoard.lists[targetListIndex].id,
-      };
-      newBoard.lists[targetListIndex].cards.push(updatedCard);
-    } else {
-      const targetCardPosition2 =
-        newBoard.lists[targetListIndex].cards[targetCardIndex + 1].position;
-      const newPosition = (targetCardPosition + targetCardPosition2) / 2;
-
-      updatedCard = {
-        ...sourceCard,
-        position: newPosition,
-        list: newBoard.lists[targetListIndex].id,
-      };
-      newBoard.lists[targetListIndex].cards.splice(
-        targetCardIndex + 1,
-        0,
-        updatedCard,
-      );
-    }
-  }
-
-  return { updatedCard, newBoard };
-}
+import { List } from "./List.jsx";
+import { applyDrag } from "./dnd.js";
 
 export function Board({ boardId }) {
   async function fetchBoard(query) {
@@ -203,7 +29,10 @@ export function Board({ boardId }) {
     mutationFn: async () => {
       const response = await fetch(BASE_URL + `board/${boardId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
       });
       if (!response.ok) throw new Error("board update failed");
       return response.json();
@@ -245,7 +74,10 @@ function BoardContent({ boardData }) {
     mutationFn: (updateBoard) => {
       return fetch(BASE_URL + `board/${board.id}/`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
         body: JSON.stringify(updateBoard),
       });
     },
@@ -274,7 +106,10 @@ function BoardContent({ boardData }) {
     mutationFn: (newList) => {
       return fetch(BASE_URL + `list/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
         body: JSON.stringify(newList),
       });
     },
@@ -301,7 +136,10 @@ function BoardContent({ boardData }) {
     mutationFn: (newCard) => {
       return fetch(BASE_URL + `card/`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
         body: JSON.stringify(newCard),
       });
     },
@@ -332,7 +170,10 @@ function BoardContent({ boardData }) {
     mutationFn: async (card) => {
       const response = await fetch(BASE_URL + `card/${card.id}/`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
       });
 
       if (!response.ok) {
@@ -365,11 +206,14 @@ function BoardContent({ boardData }) {
     mutationFn: async (listId) => {
       const response = await fetch(BASE_URL + `list/${listId}/`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
       });
 
       if (!response.ok) {
-        throw new Error(`Failed to delete card: ${response.status}`);
+        throw new Error(`Failed to delete list: ${response.status}`);
       }
 
       return listId;
@@ -393,7 +237,10 @@ function BoardContent({ boardData }) {
 
       const response = await fetch(BASE_URL + `card/${cardId}/`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
         body: JSON.stringify({
           position: cardPosition,
           list: cardList,
@@ -565,138 +412,6 @@ function BoardContent({ boardData }) {
         ))}
         <button onClick={handleAddList}>add list</button>
       </DragDropProvider>
-    </div>
-  );
-}
-
-function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
-  const [name, setName] = useState(list.name);
-  const [position, setPosition] = useState(list.position);
-  const [readOnly, setReadOnly] = useState(true);
-
-  const { ref } = useDroppable({
-    id: String(list.id),
-
-    collisionDetector: noSelfCollision,
-  });
-
-  const updateList = useMutation({
-    mutationFn: (updatedList) => {
-      return fetch(BASE_URL + `list/${list.id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedList),
-      });
-    },
-  });
-
-  function handleSubmit() {
-    if (readOnly === false) {
-      const editedList = {
-        name: name,
-      };
-      if (name !== list.name) {
-        updateList.mutate(editedList);
-      }
-    }
-
-    setReadOnly(!readOnly);
-  }
-
-  return (
-    <div style={{ backgroundColor: "yellow", margin: 10 }}>
-      list:
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        readOnly={readOnly}
-      />
-      <button onClick={handleSubmit}>✏️</button>
-      <div
-        ref={ref}
-        style={{
-          backgroundColor: "tan",
-          margin: 10,
-          padding: 10,
-          minHeight: 300,
-        }}
-      >
-        {list.cards.map((card, index) => (
-          <Card
-            card={card}
-            key={card.id}
-            index={index}
-            onDeleteCard={onDeleteCard}
-          />
-        ))}
-      </div>
-      <button onClick={() => onAddCard(list.id, list.cards.length)}>
-        add card
-      </button>
-      <button onClick={() => onDeleteList(list.id)}>delete list</button>
-    </div>
-  );
-}
-
-function Card({ card, index, onDeleteCard }) {
-  const [description, setDescription] = useState(card.description);
-  const [imageUrl, setImageUrl] = useState(card.imageUrl);
-  const [readOnly, setReadOnly] = useState(true);
-
-  const { ref, isDragSource } = useSortable({
-    id: card.id,
-    index: index,
-
-    collisionDetector: noSelfCollision,
-  });
-
-  const updateCard = useMutation({
-    mutationFn: (updatedCard) => {
-      return fetch(BASE_URL + `card/${card.id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedCard),
-      });
-    },
-  });
-
-  function handleSubmit() {
-    if (readOnly === false) {
-      const editedCard = {
-        description: description,
-        imageUrl: imageUrl,
-      };
-      if (description !== card.description || imageUrl !== card.imageUrl) {
-        updateCard.mutate(editedCard);
-      }
-    }
-
-    setReadOnly(!readOnly);
-  }
-
-  return (
-    <div
-      ref={ref}
-      style={{ backgroundColor: "green", padding: 5, marginTop: 0 }}
-    >
-      card:
-      <input
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        readOnly={readOnly}
-      />
-      {!readOnly && (
-        <input
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder="put image link here"
-        />
-      )}
-      {imageUrl && <img src={imageUrl} alt="" />}
-      <button onClick={handleSubmit}>✏️</button>
-      <button onClick={(e) => onDeleteCard(card)}>❌</button>
-      position: {card.position}
     </div>
   );
 }

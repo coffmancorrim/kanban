@@ -45,7 +45,7 @@ class BoardSerializer(serializers.ModelSerializer):
         source="background_color", required=False, allow_blank=True
     )
 
-    updatedCount = serializers.IntegerField(source="updated_count")
+    updatedCount = serializers.IntegerField(source="updated_count", required=False)
 
     class Meta:
         model = Board
