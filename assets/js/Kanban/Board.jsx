@@ -6,14 +6,21 @@ import { BASE_URL, getCookie } from "./config.jsx";
 import { Link } from "@tanstack/react-router";
 import { List } from "./List.jsx";
 import { applyDrag } from "./dnd.js";
+import {
+  useAddCard,
+  useAddList,
+  useDeleteCard,
+  useDeleteList,
+  useUpdateCardPosition,
+} from "./BoardOperations.jsx";
+
+async function fetchBoard(boardId) {
+  const response = await fetch(BASE_URL + `board/${boardId}/`);
+  if (!response.ok) throw new Error("Failed to fetch board");
+  return await response.json();
+}
 
 export function Board({ boardId }) {
-  async function fetchBoard(query) {
-    const response = await fetch(BASE_URL + `board/${boardId}`);
-    if (!response.ok) throw new Error("Failed to fetch board");
-    return await response.json();
-  }
-
   const queryClient = useQueryClient();
 
   const {
@@ -21,13 +28,13 @@ export function Board({ boardId }) {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["board"],
-    queryFn: fetchBoard,
+    queryKey: ["board", boardId],
+    queryFn: () => fetchBoard(boardId),
   });
 
   const updateBoardMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch(BASE_URL + `board/${boardId}`, {
+      const response = await fetch(BASE_URL + `board/${boardId}/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -48,27 +55,22 @@ export function Board({ boardId }) {
     }
   }, [boardData.updatedCount]);
 
-  if (error) return <p>{error.message}</p>;
-  if (isLoading) return <p>loading...</p>;
+  const [board, setBoard] = useState({ lists: [] });
 
-  return <BoardContent boardData={boardData} />;
-}
+  useEffect(() => {
+    setBoard(boardData);
+    setName(boardData.name ?? "");
+    setBackgroundColor(boardData.backgroundColor ?? "");
+    setBackgroundImageUrl(boardData.backgroundImageUrl ?? "");
+  }, [boardData]);
 
-function BoardContent({ boardData }) {
-  const [board, setBoard] = useState(boardData);
-  const [name, setName] = useState(board.name);
-  const [backgroundImageUrl, setBackgroundImageUrl] = useState(
-    board.backgroundImageUrl,
-  );
-  const [backgroundColor, setBackgroundColor] = useState(board.backgroundColor);
+  const [name, setName] = useState("");
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
+  const [backgroundColor, setBackgroundColor] = useState("");
   const [readOnly, setReadOnly] = useState(true);
 
   const snapshotRef = useRef(null);
   const lastTargetRef = useRef({ id: null, isAbove: null });
-
-  useEffect(() => {
-    setBoard(boardData);
-  }, [boardData]);
 
   const updateBoard = useMutation({
     mutationFn: (updateBoard) => {
@@ -102,160 +104,34 @@ function BoardContent({ boardData }) {
     setReadOnly(!readOnly);
   }
 
-  const addList = useMutation({
-    mutationFn: (newList) => {
-      return fetch(BASE_URL + `list/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(newList),
-      });
-    },
-    onSuccess: async (response) => {
-      const newList = await response.json();
+  const addList = useAddList({ setBoard });
 
-      setBoard((previousBoard) => ({
-        ...previousBoard,
-        lists: [...previousBoard.lists, newList],
-      }));
-    },
-  });
+  const addCard = useAddCard({ setBoard });
 
-  async function handleAddList() {
-    const newList = {
-      name: "enter name here",
-      position: board.lists.length,
-      board: board.id,
-    };
-    await addList.mutate(newList);
-  }
-
-  const addCard = useMutation({
-    mutationFn: (newCard) => {
-      return fetch(BASE_URL + `card/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(newCard),
-      });
-    },
-    onSuccess: async (response) => {
-      const newCard = await response.json();
-
-      setBoard((previousBoard) => ({
-        ...previousBoard,
-        lists: previousBoard.lists.map((list) =>
-          list.id == newCard.list
-            ? { ...list, cards: [...list.cards, newCard] }
-            : list,
-        ),
-      }));
-    },
-  });
-
-  async function handleAddCard(listId, listPosition) {
-    const newCard = {
+  function handleAddCard(listId, listPosition) {
+    addCard.mutate({
       description: "enter name here",
       position: listPosition,
       list: listId,
-    };
-    await addCard.mutate(newCard);
+    });
   }
 
-  const deleteCard = useMutation({
-    mutationFn: async (card) => {
-      const response = await fetch(BASE_URL + `card/${card.id}/`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete card: ${response.status}`);
-      }
-
-      return card;
-    },
-
-    onSuccess: (cardToDelete) => {
-      setBoard((previousBoard) => ({
-        ...previousBoard,
-        lists: previousBoard.lists.map((list) =>
-          list.id == cardToDelete.list
-            ? {
-                ...list,
-                cards: list.cards.filter((card) => card.id !== cardToDelete.id),
-              }
-            : list,
-        ),
-      }));
-    },
-  });
+  const deleteCard = useDeleteCard({ setBoard });
 
   async function handleDeleteCard(card) {
     await deleteCard.mutate(card);
   }
 
-  const deleteList = useMutation({
-    mutationFn: async (listId) => {
-      const response = await fetch(BASE_URL + `list/${listId}/`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete list: ${response.status}`);
-      }
-
-      return listId;
-    },
-
-    onSuccess: (listId) => {
-      setBoard((previousBoard) => ({
-        ...previousBoard,
-        lists: previousBoard.lists.filter((list) => list.id != listId),
-      }));
-    },
-  });
+  const deleteList = useDeleteList({ setBoard });
 
   async function handleDeleteList(listId) {
     await deleteList.mutate(listId);
   }
 
-  const updateCardPosition = useMutation({
-    mutationFn: async ({ cardId, cardPosition, cardList }) => {
-      console.log("Updating:", cardId, cardPosition);
+  const updateCardPosition = useUpdateCardPosition();
 
-      const response = await fetch(BASE_URL + `card/${cardId}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify({
-          position: cardPosition,
-          list: cardList,
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Update failed:", response.status);
-        throw new Error("Failed to update card position");
-      }
-
-      console.log("Update successful");
-      return response.json();
-    },
-  });
+  if (error) return <p>{error.message}</p>;
+  if (isLoading) return <p>loading...</p>;
 
   return (
     <div
@@ -410,7 +286,17 @@ function BoardContent({ boardData }) {
             onDeleteList={handleDeleteList}
           />
         ))}
-        <button onClick={handleAddList}>add list</button>
+        <button
+          onClick={() =>
+            addList.mutate({
+              name: "enter name here",
+              position: board.lists.length,
+              board: board.id,
+            })
+          }
+        >
+          add list
+        </button>
       </DragDropProvider>
     </div>
   );
