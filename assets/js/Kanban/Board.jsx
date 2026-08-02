@@ -11,8 +11,11 @@ import {
   useAddList,
   useDeleteCard,
   useDeleteList,
+  useUpdateBoard,
+  useUpdateBoardOnCount,
   useUpdateCardPosition,
 } from "./BoardOperations.jsx";
+import { useDrag } from "./useDrag.js";
 
 async function fetchBoard(boardId) {
   const response = await fetch(BASE_URL + `board/${boardId}/`);
@@ -21,8 +24,6 @@ async function fetchBoard(boardId) {
 }
 
 export function Board({ boardId }) {
-  const queryClient = useQueryClient();
-
   const {
     data: boardData = { lists: [] },
     isLoading,
@@ -32,30 +33,25 @@ export function Board({ boardId }) {
     queryFn: () => fetchBoard(boardId),
   });
 
-  const updateBoardMutation = useMutation({
-    mutationFn: async () => {
-      const response = await fetch(BASE_URL + `board/${boardId}/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      });
-      if (!response.ok) throw new Error("board update failed");
-      return response.json();
-    },
-    onSuccess: (updatedBoard) => {
-      queryClient.setQueryData(["board"], updatedBoard);
-    },
-  });
+  const [board, setBoard] = useState({ lists: [] });
+  const [name, setName] = useState("");
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
+  const [backgroundColor, setBackgroundColor] = useState("");
+  const [readOnly, setReadOnly] = useState(true);
+
+  const { onDragStart, onDragOver, onDragEnd } = useDrag({ board, setBoard });
+  const updateBoard = useUpdateBoard(boardId);
+  const updateBoardOnCount = useUpdateBoardOnCount();
+  const addList = useAddList({ setBoard });
+  const addCard = useAddCard({ setBoard });
+  const deleteCard = useDeleteCard({ setBoard });
+  const deleteList = useDeleteList({ setBoard });
 
   useEffect(() => {
-    if (boardData.updatedCount >= 100 && !updateBoardMutation.isPending) {
-      updateBoardMutation.mutate();
+    if (boardData.updatedCount >= 100 && !updateBoardOnCount.isPending) {
+      updateBoardOnCount.mutate();
     }
   }, [boardData.updatedCount]);
-
-  const [board, setBoard] = useState({ lists: [] });
 
   useEffect(() => {
     setBoard(boardData);
@@ -63,27 +59,6 @@ export function Board({ boardId }) {
     setBackgroundColor(boardData.backgroundColor ?? "");
     setBackgroundImageUrl(boardData.backgroundImageUrl ?? "");
   }, [boardData]);
-
-  const [name, setName] = useState("");
-  const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
-  const [backgroundColor, setBackgroundColor] = useState("");
-  const [readOnly, setReadOnly] = useState(true);
-
-  const snapshotRef = useRef(null);
-  const lastTargetRef = useRef({ id: null, isAbove: null });
-
-  const updateBoard = useMutation({
-    mutationFn: (updateBoard) => {
-      return fetch(BASE_URL + `board/${board.id}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(updateBoard),
-      });
-    },
-  });
 
   function handleSubmit() {
     if (readOnly === false) {
@@ -104,10 +79,6 @@ export function Board({ boardId }) {
     setReadOnly(!readOnly);
   }
 
-  const addList = useAddList({ setBoard });
-
-  const addCard = useAddCard({ setBoard });
-
   function handleAddCard(listId, listPosition) {
     addCard.mutate({
       description: "enter name here",
@@ -116,19 +87,13 @@ export function Board({ boardId }) {
     });
   }
 
-  const deleteCard = useDeleteCard({ setBoard });
-
-  async function handleDeleteCard(card) {
-    await deleteCard.mutate(card);
+  function handleDeleteCard(card) {
+    deleteCard.mutate(card);
   }
 
-  const deleteList = useDeleteList({ setBoard });
-
-  async function handleDeleteList(listId) {
-    await deleteList.mutate(listId);
+  function handleDeleteList(listId) {
+    deleteList.mutate(listId);
   }
-
-  const updateCardPosition = useUpdateCardPosition();
 
   if (error) return <p>{error.message}</p>;
   if (isLoading) return <p>loading...</p>;
@@ -141,110 +106,9 @@ export function Board({ boardId }) {
       }}
     >
       <DragDropProvider
-        onDragStart={() => {
-          console.log("[DragStart]", {
-            board,
-          });
-
-          snapshotRef.current = board;
-          lastTargetRef.current = { id: null, isAbove: null };
-        }}
-        onDragOver={(event) => {
-          const sourceId = event.operation.source?.id;
-          const targetId = event.operation.target?.id ?? null;
-
-          if (!targetId || sourceId === targetId) {
-            console.log(
-              "[DragOver] Early return: invalid target or same source",
-              {
-                sourceId,
-                targetId,
-              },
-            );
-            return;
-          }
-
-          const pointerY = event.operation.position.current.y;
-          const targetCenterY = event.operation.target?.shape?.center.y;
-          const isAbove = pointerY < targetCenterY;
-
-          // skip only if BOTH target and side are the same
-          if (
-            targetId === lastTargetRef.current.id &&
-            isAbove === lastTargetRef.current.isAbove
-          ) {
-            console.log("[DragOver] Early return: same target and side", {
-              targetId,
-              isAbove,
-              lastTarget: lastTargetRef.current,
-            });
-            return;
-          }
-
-          console.log("[DragOver] Applying drag", {
-            sourceId,
-            targetId,
-            pointerY,
-            targetCenterY,
-            isAbove,
-          });
-
-          lastTargetRef.current = { id: targetId, isAbove };
-
-          const { newBoard } = applyDrag(
-            snapshotRef.current,
-            sourceId,
-            targetId,
-            isAbove,
-          );
-          setBoard(newBoard);
-        }}
-        onDragEnd={(event) => {
-          const sourceId = event.operation.source?.id;
-          const targetId = event.operation.target?.id ?? null;
-
-          if (event.canceled || !targetId || sourceId == targetId) {
-            console.log("[DragEnd] Restoring snapshot", {
-              canceled: event.canceled,
-              sourceId,
-              targetId,
-            });
-
-            setBoard(snapshotRef.current); // restore on cancel
-            return;
-          }
-
-          const pointerY = event.operation.position.current.y;
-          const targetCenterY = event.operation.target?.shape?.center.y;
-          const isAbove = pointerY < targetCenterY;
-
-          console.log("[DragEnd] Final applyDrag", {
-            sourceId,
-            targetId,
-            pointerY,
-            targetCenterY,
-            isAbove,
-          });
-
-          const { updatedCard, newBoard } = applyDrag(
-            snapshotRef.current,
-            sourceId,
-            targetId,
-            isAbove,
-          );
-          setBoard(newBoard);
-
-          updateCardPosition.mutate({
-            cardId: updatedCard.id,
-            cardPosition: updatedCard.position,
-            cardList: updatedCard.list,
-          });
-
-          console.log("[DragEnd] Clearing refs");
-
-          snapshotRef.current = null;
-          lastTargetRef.current = null;
-        }}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragEnd={onDragEnd}
       >
         <Link to="/">🔙</Link>
         board:

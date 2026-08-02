@@ -1,5 +1,25 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BASE_URL, getCookie } from "./config.jsx";
+
+export function useUpdateBoardOnCount() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const response = await fetch(BASE_URL + `board/${boardId}/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+      });
+      if (!response.ok) throw new Error("board update failed");
+      return response.json();
+    },
+    onSuccess: (updatedBoard) => {
+      queryClient.setQueryData(["board"], updatedBoard);
+    },
+  });
+}
 
 export function useAddList({ setBoard }) {
   return useMutation({
@@ -145,6 +165,24 @@ export function useUpdateCardPosition() {
       }
 
       console.log("Update successful");
+      return response.json();
+    },
+  });
+}
+
+export function useUpdateBoard(boardId) {
+  return useMutation({
+    mutationFn: async (updatedBoard) => {
+      const response = await fetch(BASE_URL + `board/${boardId}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify(updatedBoard),
+      });
+
+      if (!response.ok) throw new Error("Failed to update board");
       return response.json();
     },
   });
