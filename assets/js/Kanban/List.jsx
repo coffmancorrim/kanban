@@ -1,10 +1,11 @@
 import { useDroppable } from "@dnd-kit/react";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { BASE_URL } from "./config.jsx";
+import { BASE_URL } from "./config.js";
 import "./styles.css";
 import { Card } from "./Card.jsx";
 import { noSelfCollision } from "./dnd.js";
+import { useUpdateList } from "./BoardOperations.js";
 
 export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
   const [name, setName] = useState(list.name);
@@ -16,16 +17,7 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
 
     collisionDetector: noSelfCollision,
   });
-
-  const updateList = useMutation({
-    mutationFn: (updatedList) => {
-      return fetch(BASE_URL + `list/${list.id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedList),
-      });
-    },
-  });
+  const updateList = useUpdateList(list.id);
 
   function handleSubmit() {
     if (readOnly === false) {

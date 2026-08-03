@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BASE_URL, getCookie } from "./config.jsx";
+import { BASE_URL, getCookie } from "./config.js";
+import { useEffect } from "react";
 
-export function useUpdateBoardOnCount() {
+export function useUpdateBoardOnCount(boardId, updatedCount) {
   const queryClient = useQueryClient();
-  return useMutation({
+  const updateBoardOnCount = useMutation({
     mutationFn: async () => {
       const response = await fetch(BASE_URL + `board/${boardId}/`, {
         method: "POST",
@@ -16,9 +17,15 @@ export function useUpdateBoardOnCount() {
       return response.json();
     },
     onSuccess: (updatedBoard) => {
-      queryClient.setQueryData(["board"], updatedBoard);
+      queryClient.setQueryData(["board", boardId], updatedBoard);
     },
   });
+
+  useEffect(() => {
+    if (updatedCount >= 100 && !updateBoardOnCount.isPending) {
+      updateBoardOnCount.mutate();
+    }
+  }, [updatedCount]);
 }
 
 export function useAddList({ setBoard }) {
@@ -183,6 +190,43 @@ export function useUpdateBoard(boardId) {
       });
 
       if (!response.ok) throw new Error("Failed to update board");
+      return response.json();
+    },
+  });
+}
+
+export function useUpdateList(listId) {
+  return useMutation({
+    mutationFn: async (updatedList) => {
+      const response = await fetch(BASE_URL + `list/${listId}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+
+        body: JSON.stringify(updatedList),
+      });
+
+      if (!response.ok) throw new Error("Failed to update List");
+      return response.json();
+    },
+  });
+}
+
+export function useUpdateCard(cardId) {
+  return useMutation({
+    mutationFn: async (updatedCard) => {
+      const response = await fetch(BASE_URL + `card/${cardId}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify(updatedCard),
+      });
+
+      if (!response.ok()) throw new Error("unable to update Card");
       return response.json();
     },
   });

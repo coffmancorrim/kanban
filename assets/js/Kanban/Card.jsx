@@ -1,9 +1,10 @@
 import { useSortable, isSortable } from "@dnd-kit/react/sortable";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { BASE_URL } from "./config.jsx";
+import { BASE_URL } from "./config.js";
 import "./styles.css";
 import { noSelfCollision } from "./dnd.js";
+import { useUpdateCard } from "./BoardOperations.js";
 
 export function Card({ card, index, onDeleteCard }) {
   const [description, setDescription] = useState(card.description);
@@ -16,16 +17,7 @@ export function Card({ card, index, onDeleteCard }) {
 
     collisionDetector: noSelfCollision,
   });
-
-  const updateCard = useMutation({
-    mutationFn: (updatedCard) => {
-      return fetch(BASE_URL + `card/${card.id}/`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedCard),
-      });
-    },
-  });
+  const updateCard = useUpdateCard(card.id);
 
   function handleSubmit() {
     if (readOnly === false) {

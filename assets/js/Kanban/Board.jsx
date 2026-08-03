@@ -2,7 +2,7 @@ import { DragDropProvider } from "@dnd-kit/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import "./styles.css";
-import { BASE_URL, getCookie } from "./config.jsx";
+import { BASE_URL, getCookie } from "./config.js";
 import { Link } from "@tanstack/react-router";
 import { List } from "./List.jsx";
 import { applyDrag } from "./dnd.js";
@@ -14,7 +14,7 @@ import {
   useUpdateBoard,
   useUpdateBoardOnCount,
   useUpdateCardPosition,
-} from "./BoardOperations.jsx";
+} from "./BoardOperations.js";
 import { useDrag } from "./useDrag.js";
 
 async function fetchBoard(boardId) {
@@ -41,17 +41,14 @@ export function Board({ boardId }) {
 
   const { onDragStart, onDragOver, onDragEnd } = useDrag({ board, setBoard });
   const updateBoard = useUpdateBoard(boardId);
-  const updateBoardOnCount = useUpdateBoardOnCount();
+  const updateBoardOnCount = useUpdateBoardOnCount(
+    boardId,
+    boardData.updatedCount,
+  );
   const addList = useAddList({ setBoard });
   const addCard = useAddCard({ setBoard });
   const deleteCard = useDeleteCard({ setBoard });
   const deleteList = useDeleteList({ setBoard });
-
-  useEffect(() => {
-    if (boardData.updatedCount >= 100 && !updateBoardOnCount.isPending) {
-      updateBoardOnCount.mutate();
-    }
-  }, [boardData.updatedCount]);
 
   useEffect(() => {
     setBoard(boardData);
