@@ -5,6 +5,7 @@ import { BASE_URL } from "./config.js";
 import "./styles.css";
 import { noSelfCollision } from "./dnd.js";
 import { useUpdateCard } from "./BoardOperations.js";
+import { MutationStatus } from "./MutationStatus.jsx";
 
 export function Card({ card, index, onDeleteCard }) {
   const [description, setDescription] = useState(card.description);
@@ -38,6 +39,9 @@ export function Card({ card, index, onDeleteCard }) {
       ref={ref}
       style={{ backgroundColor: "green", padding: 5, marginTop: 0 }}
     >
+      <MutationStatus
+        mutations={[{ mutation: updateCard, name: "update card" }]}
+      />
       card:
       <input
         value={description}

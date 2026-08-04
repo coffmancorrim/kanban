@@ -6,6 +6,7 @@ import "./styles.css";
 import { Card } from "./Card.jsx";
 import { noSelfCollision } from "./dnd.js";
 import { useUpdateList } from "./BoardOperations.js";
+import { MutationStatus } from "./MutationStatus.jsx";
 
 export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
   const [name, setName] = useState(list.name);
@@ -34,6 +35,9 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
 
   return (
     <div style={{ backgroundColor: "yellow", margin: 10 }}>
+      <MutationStatus
+        mutations={[{ mutation: updateList, name: "update list" }]}
+      />
       list:
       <input
         type="text"

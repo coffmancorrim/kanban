@@ -11,6 +11,7 @@ import { Board } from "./Board.jsx";
 import { Link } from "@tanstack/react-router";
 import { useCreateBoard, useDeleteBoard } from "./BoardsOperations.js";
 import { BASE_URL } from "./config.js";
+import { MutationStatus } from "./MutationStatus.jsx";
 
 async function fetchBoards(query) {
   const response = await fetch(BASE_URL + `boards/`);
@@ -41,6 +42,12 @@ export default function Boards() {
 
   return (
     <div>
+      <MutationStatus
+        mutations={[{ mutation: createBoard, name: "create board" }]}
+      />
+      <MutationStatus
+        mutations={[{ mutation: deleteBoard, name: "delete board" }]}
+      />
       <h1>boards</h1>
       <button
         onClick={(e) =>

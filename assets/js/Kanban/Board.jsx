@@ -16,6 +16,7 @@ import {
   useUpdateCardPosition,
 } from "./BoardOperations.js";
 import { useDrag } from "./useDrag.js";
+import { MutationStatus } from "./MutationStatus.jsx";
 
 async function fetchBoard(boardId) {
   const response = await fetch(BASE_URL + `board/${boardId}/`);
@@ -92,7 +93,7 @@ export function Board({ boardId }) {
     deleteList.mutate(listId);
   }
 
-  if (error) return <p>{error.message}</p>;
+  if (error) return <p>Unable to load board: {error.message}</p>;
   if (isLoading) return <p>loading...</p>;
 
   return (
@@ -102,6 +103,16 @@ export function Board({ boardId }) {
         backgroundImage: `url(${backgroundImageUrl})`,
       }}
     >
+      <MutationStatus
+        mutations={[
+          { mutation: addList, name: "add list" },
+          { mutation: addCard, name: "add card" },
+          { mutation: deleteList, name: "delete list" },
+          { mutation: deleteCard, name: "delete card" },
+          { mutation: updateBoard, name: "update board" },
+        ]}
+      />
+
       <DragDropProvider
         onDragStart={onDragStart}
         onDragOver={onDragOver}
