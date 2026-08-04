@@ -6,13 +6,13 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { useState } from "react";
-import "./styles.css";
+import "../styles.css";
 import { Board } from "./Board.jsx";
 import { Link } from "@tanstack/react-router";
-import { useCreateBoard, useDeleteBoard } from "./BoardsOperations.js";
-import { BASE_URL } from "./config.js";
+import { BASE_URL } from "../config.js";
 import { MutationStatus } from "./MutationStatus.jsx";
 import { LoadingGrid } from "./LoadingGrid.jsx";
+import { useCreateBoard, useDeleteBoard } from "../hooks/BoardsOperations.js";
 
 async function fetchBoards(query) {
   const response = await fetch(BASE_URL + `boards/`);

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Board } from "../../Kanban/Board.jsx";
-import { LoadingGrid } from "../../Kanban/LoadingGrid.jsx";
+import { LoadingGrid } from "../../Kanban/components/LoadingGrid.jsx";
+import { Board } from "../../Kanban/components/Board.jsx";
 
 export const Route = createFileRoute("/kanban/$boardId")({
   component: BoardPage,

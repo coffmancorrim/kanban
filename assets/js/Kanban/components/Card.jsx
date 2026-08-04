@@ -1,11 +1,10 @@
 import { useSortable, isSortable } from "@dnd-kit/react/sortable";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { BASE_URL } from "./config.js";
-import "./styles.css";
-import { noSelfCollision } from "./dnd.js";
-import { useUpdateCard } from "./BoardOperations.js";
+import "../styles.css";
 import { MutationStatus } from "./MutationStatus.jsx";
+import { noSelfCollision } from "../util/dnd.js";
+import { useUpdateCard } from "../hooks/BoardOperations.js";
 
 export function Card({ card, index, onDeleteCard }) {
   const [description, setDescription] = useState(card.description);

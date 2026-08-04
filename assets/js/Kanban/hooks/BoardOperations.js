@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BASE_URL, getCookie } from "./config.js";
+import { BASE_URL, getCookie } from "../config.js";
 import { useEffect } from "react";
 
 export function useUpdateBoardOnCount(boardId, updatedCount) {

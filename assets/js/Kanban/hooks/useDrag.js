@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { applyDrag } from "./dnd";
+import { applyDrag } from "../util/dnd";
 import { useUpdateCardPosition } from "./BoardOperations";
 
 export function useDrag({ board, setBoard }) {

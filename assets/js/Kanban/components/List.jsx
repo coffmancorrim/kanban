@@ -1,12 +1,11 @@
 import { useDroppable } from "@dnd-kit/react";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { BASE_URL } from "./config.js";
-import "./styles.css";
+import "../styles.css";
 import { Card } from "./Card.jsx";
-import { noSelfCollision } from "./dnd.js";
-import { useUpdateList } from "./BoardOperations.js";
 import { MutationStatus } from "./MutationStatus.jsx";
+import { noSelfCollision } from "../util/dnd.js";
+import { useUpdateList } from "../hooks/BoardOperations.js";
 
 export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
   const [name, setName] = useState(list.name);

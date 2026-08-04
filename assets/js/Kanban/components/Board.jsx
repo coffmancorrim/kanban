@@ -1,11 +1,11 @@
 import { DragDropProvider } from "@dnd-kit/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import "./styles.css";
-import { BASE_URL, getCookie } from "./config.js";
+import "../styles.css";
+import { BASE_URL, getCookie } from "../config.js";
 import { Link } from "@tanstack/react-router";
 import { List } from "./List.jsx";
-import { applyDrag } from "./dnd.js";
+import { applyDrag } from "../util/dnd.js";
 import {
   useAddCard,
   useAddList,
@@ -14,8 +14,8 @@ import {
   useUpdateBoard,
   useUpdateBoardOnCount,
   useUpdateCardPosition,
-} from "./BoardOperations.js";
-import { useDrag } from "./useDrag.js";
+} from "../hooks/BoardOperations.js";
+import { useDrag } from "../hooks/useDrag.js";
 import { MutationStatus } from "./MutationStatus.jsx";
 import { LoadingGrid } from "./LoadingGrid.jsx";
 
