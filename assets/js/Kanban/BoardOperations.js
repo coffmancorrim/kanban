@@ -226,7 +226,7 @@ export function useUpdateCard(cardId) {
         body: JSON.stringify(updatedCard),
       });
 
-      if (!response.ok()) throw new Error("unable to update Card");
+      if (!response.ok) throw new Error("unable to update Card");
       return response.json();
     },
   });

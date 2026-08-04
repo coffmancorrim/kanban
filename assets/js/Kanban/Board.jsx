@@ -77,6 +77,22 @@ export function Board({ boardId }) {
     setReadOnly(!readOnly);
   }
 
+  function handleAddList() {
+    if (board.lists.length != 0) {
+      addList.mutate({
+        name: "enter name here",
+        position: board.lists[board.lists.length - 1].position + 1,
+        board: board.id,
+      });
+    } else {
+      addList.mutate({
+        name: "enter name here",
+        position: 1,
+        board: board.id,
+      });
+    }
+  }
+
   function handleAddCard(listId, listPosition) {
     addCard.mutate({
       description: "enter name here",
@@ -101,6 +117,7 @@ export function Board({ boardId }) {
       style={{
         backgroundColor: backgroundColor,
         backgroundImage: `url(${backgroundImageUrl})`,
+        height: "100%",
       }}
     >
       <MutationStatus
@@ -149,26 +166,18 @@ export function Board({ boardId }) {
           </div>
         )}
         <button onClick={handleSubmit}>✏️</button>
-        {board.lists.map((list) => (
-          <List
-            list={list}
-            key={list.id}
-            onAddCard={handleAddCard}
-            onDeleteCard={handleDeleteCard}
-            onDeleteList={handleDeleteList}
-          />
-        ))}
-        <button
-          onClick={() =>
-            addList.mutate({
-              name: "enter name here",
-              position: board.lists.length,
-              board: board.id,
-            })
-          }
-        >
-          add list
-        </button>
+        <div style={{ display: "flex", flexDirection: "row" }}>
+          {board.lists.map((list) => (
+            <List
+              list={list}
+              key={list.id}
+              onAddCard={handleAddCard}
+              onDeleteCard={handleDeleteCard}
+              onDeleteList={handleDeleteList}
+            />
+          ))}
+        </div>
+        <button onClick={handleAddList}>add list</button>
       </DragDropProvider>
     </div>
   );

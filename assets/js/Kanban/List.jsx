@@ -34,7 +34,7 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
   }
 
   return (
-    <div style={{ backgroundColor: "yellow", margin: 10 }}>
+    <div style={{ width: 300, backgroundColor: "yellow", margin: 10 }}>
       <MutationStatus
         mutations={[{ mutation: updateList, name: "update list" }]}
       />
