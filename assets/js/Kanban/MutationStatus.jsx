@@ -1,10 +1,11 @@
 import { createPortal } from "react-dom";
 
 export function MutationStatus({ mutations }) {
-  return mutations.map(({ mutation, name }) =>
-    createPortal(
+  return mutations.map(({ mutation, name }) => {
+    if (!mutation.isPaused && !mutation.isError) return null;
+
+    return createPortal(
       <div
-        key={name}
         style={{
           position: "fixed",
           bottom: 20,
@@ -18,7 +19,6 @@ export function MutationStatus({ mutations }) {
             retried when the connection is restored.
           </h1>
         )}
-
         {mutation.isError && (
           <h1>
             Unable to {name}: {mutation.error.message}
@@ -26,6 +26,7 @@ export function MutationStatus({ mutations }) {
         )}
       </div>,
       document.body,
-    ),
-  );
+      name,
+    );
+  });
 }

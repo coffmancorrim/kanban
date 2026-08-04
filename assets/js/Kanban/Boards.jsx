@@ -12,6 +12,7 @@ import { Link } from "@tanstack/react-router";
 import { useCreateBoard, useDeleteBoard } from "./BoardsOperations.js";
 import { BASE_URL } from "./config.js";
 import { MutationStatus } from "./MutationStatus.jsx";
+import { LoadingGrid } from "./LoadingGrid.jsx";
 
 async function fetchBoards(query) {
   const response = await fetch(BASE_URL + `boards/`);
@@ -33,7 +34,7 @@ export default function Boards() {
   const deleteBoard = useDeleteBoard();
 
   if (isLoading) {
-    return <p>Loading boards...</p>;
+    return <LoadingGrid />;
   }
 
   if (error) {

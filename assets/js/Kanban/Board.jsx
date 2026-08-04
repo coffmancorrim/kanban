@@ -17,6 +17,7 @@ import {
 } from "./BoardOperations.js";
 import { useDrag } from "./useDrag.js";
 import { MutationStatus } from "./MutationStatus.jsx";
+import { LoadingGrid } from "./LoadingGrid.jsx";
 
 async function fetchBoard(boardId) {
   const response = await fetch(BASE_URL + `board/${boardId}/`);
@@ -110,7 +111,12 @@ export function Board({ boardId }) {
   }
 
   if (error) return <p>Unable to load board: {error.message}</p>;
-  if (isLoading) return <p>loading...</p>;
+  if (isLoading)
+    return (
+      <div>
+        <LoadingGrid />
+      </div>
+    );
 
   return (
     <div
