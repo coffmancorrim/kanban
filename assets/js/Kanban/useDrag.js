@@ -32,7 +32,6 @@ export function useDrag({ board, setBoard }) {
     const targetCenterY = event.operation.target?.shape?.center.y;
     const isAbove = pointerY < targetCenterY;
 
-    // skip only if BOTH target and side are the same
     if (
       targetId === lastTargetRef.current.id &&
       isAbove === lastTargetRef.current.isAbove
@@ -75,7 +74,7 @@ export function useDrag({ board, setBoard }) {
         targetId,
       });
 
-      setBoard(snapshotRef.current); // restore on cancel
+      setBoard(snapshotRef.current);
       return;
     }
 

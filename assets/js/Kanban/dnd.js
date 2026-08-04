@@ -1,7 +1,6 @@
 import { closestCorners } from "@dnd-kit/collision";
 
 export const noSelfCollision = ({ dragOperation, droppable }) => {
-  // ignore the item currently being dragged
   if (dragOperation.source?.id === droppable.id) {
     return null;
   }
@@ -50,7 +49,7 @@ export function applyDrag(board, sourceId, targetId, isAbove) {
     lists: board.lists.map((list) => ({ ...list, cards: [...list.cards] })),
   };
 
-  //get the card location that started the drag (source) and the card itself
+  // Get the card that initiated the drag and its original location
   const [sourceListIndex, sourceCardIndex] = findListAndCardIndex(
     newBoard,
     sourceId,
@@ -58,20 +57,19 @@ export function applyDrag(board, sourceId, targetId, isAbove) {
   const sourceCard = newBoard.lists[sourceListIndex].cards[sourceCardIndex];
   console.log("source card:", sourceCard);
 
-  //remove the source card from the cloned board
+  //remove the card that intiated the drag from the cloned board
   newBoard.lists[sourceListIndex].cards.splice(sourceCardIndex, 1);
 
-  //get the location of the drag location (target) and the card itself
-  //see if drag location general list or near a card
+  // Get the drag target and its location.
+  // Determine whether the drag target is a list or a card.
   let updatedCard = null;
-
-  //is list
   if (typeof targetId === "string") {
+    //If the dragged location is a list
     const targetListIndex = newBoard.lists.findIndex(
       (list) => String(list.id) === String(targetId),
     );
 
-    //add card to new position
+    //Add card to new position
     if (newBoard.lists[targetListIndex].cards.length === 0) {
       updatedCard = {
         ...sourceCard,
@@ -102,7 +100,7 @@ export function applyDrag(board, sourceId, targetId, isAbove) {
     return { updatedCard, newBoard };
   }
 
-  // is card?
+  //if the dragged location is another card
   const [targetListIndex, targetCardIndex] = findListAndCardIndex(
     newBoard,
     targetId,
