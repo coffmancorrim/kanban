@@ -33,7 +33,7 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
   }
 
   return (
-    <div className="kanban-column">
+    <div className="kanban-list">
       <MutationStatus
         mutations={[{ mutation: updateList, name: "update list" }]}
       />

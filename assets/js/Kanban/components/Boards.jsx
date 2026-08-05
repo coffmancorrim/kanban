@@ -42,36 +42,48 @@ export default function Boards() {
   }
 
   return (
-    <div>
+    <div className="boards-body">
       <MutationStatus
         mutations={[{ mutation: createBoard, name: "create board" }]}
       />
       <MutationStatus
         mutations={[{ mutation: deleteBoard, name: "delete board" }]}
       />
-      <h1>boards</h1>
-      <button
-        onClick={(e) =>
-          createBoard.mutate({
-            name: "New Board",
-          })
-        }
-      >
-        ⊕
-      </button>
-      {boards.map((board) => (
-        <div key={board.id}>
-          <Link
-            to="/kanban/$boardId"
-            params={{
-              boardId: board.id,
-            }}
-          >
-            {board.name}
-          </Link>
-          <button onClick={(e) => deleteBoard.mutate(board.id)}>❌</button>
-        </div>
-      ))}
+      <div className="boards-header">
+        <h1>boards</h1>
+        <button
+          onClick={(e) =>
+            createBoard.mutate({
+              name: "New Board",
+            })
+          }
+        >
+          ⊕
+        </button>
+      </div>
+      <div className="boards-list">
+        {boards.map((board) => (
+          <div className="boards-item">
+            <Link
+              to="/kanban/$boardId"
+              params={{
+                boardId: board.id,
+              }}
+
+              className="boards-item-link"
+              key={board.id}
+            >
+              {board.name}
+            </Link>
+            <button
+              className="boards-item-button"
+              onClick={(e) => deleteBoard.mutate(board.id)}
+            >
+              ❌
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
