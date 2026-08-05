@@ -1,80 +1,87 @@
-body {
+html,
+body,
+#root {
   margin: 0;
   font-family: Arial, sans-serif;
+  height: 100%;
+  width: 100%;
 }
 
-/* wrapper */
-.kanban-wrapper {
-  padding: 20px;
+input {
+  border: none;
+  background: none;
 }
 
-/* board layout */
+button {
+  border: none;
+  background-color: #f1f2f4;
+  border-radius: 4px;
+  padding: 4px 16px;
+  margin: 0 4px;
+}
+
+.kanban-body {
+  height: 100%;
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: none;
+  background-size: cover;
+}
+
 .kanban-board {
   display: flex;
+  flex-direction: row;
   gap: 12px;
   align-items: flex-start;
+  width: max-content;
+  padding: 0 12px;
 }
 
-/* column */
+.kanban-board-header {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  background: #cbd3df;
+  padding: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.back-link {
+  font-size: 20px;
+}
+
+.kanban-title {
+  font-size: 20px;
+}
+
 .kanban-column {
-  width: 280px;
-  min-height: 400px;
-  background: #ebecf0;
+  width: 274px;
+  min-height: 116px;
+  background: #f1f2f4;
   border-radius: 10px;
-  padding: 12px;
-  transition: 0.15s ease;
-  border: 2px solid transparent;
-}
-
-/* active drop target */
-.kanban-column.drag-over {
-  border: 2px dashed #4c9ffe;
-  background: #e6f2ff;
-}
-
-/* column title */
-.kanban-column-title {
-  margin: 0 0 10px 0;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-/* cards container */
-.kanban-cards {
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-around;
 }
 
-/* card */
+.kanban-column-header {
+}
+
+.kanban-column-footer {
+}
+
 .kanban-card {
-  padding: 12px;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  cursor: grab;
-  user-select: none;
-  transition:
-    transform 0.1s ease,
-    box-shadow 0.1s ease,
-    opacity 0.1s ease;
-}
-
-.kanban-card:active {
-  cursor: grabbing;
-}
-
-/* dragging state */
-.kanban-card[style*="opacity: 0.4"] {
-  transform: rotate(2deg);
-}
-
-/* overlay card */
-.kanban-card-overlay {
-  padding: 12px;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #999;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  transform: rotate(2deg);
+  background-color: #ffffff;
+  padding: 8px;
+  margin: 8px;
+  border-radius: 12px;
+  display: flex;
 }

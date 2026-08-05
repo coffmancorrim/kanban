@@ -34,14 +34,10 @@ export function Card({ card, index, onDeleteCard }) {
   }
 
   return (
-    <div
-      ref={ref}
-      style={{ backgroundColor: "green", padding: 5, marginTop: 0 }}
-    >
+    <div ref={ref} className="kanban-card">
       <MutationStatus
         mutations={[{ mutation: updateCard, name: "update card" }]}
       />
-      card:
       <input
         value={description}
         onChange={(e) => setDescription(e.target.value)}
@@ -57,7 +53,6 @@ export function Card({ card, index, onDeleteCard }) {
       {imageUrl && <img src={imageUrl} alt="" />}
       <button onClick={handleSubmit}>✏️</button>
       <button onClick={(e) => onDeleteCard(card)}>❌</button>
-      position: {card.position}
     </div>
   );
 }

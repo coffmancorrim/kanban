@@ -120,10 +120,10 @@ export function Board({ boardId }) {
 
   return (
     <div
+      className="kanban-body"
       style={{
         backgroundColor: backgroundColor,
         backgroundImage: `url(${backgroundImageUrl})`,
-        height: "100%",
       }}
     >
       <MutationStatus
@@ -141,38 +141,42 @@ export function Board({ boardId }) {
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
       >
-        <Link to="/">🔙</Link>
-        board:
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          readOnly={readOnly}
-        />
-        {!readOnly && (
-          <div>
-            <label htmlFor="background-color">Background Color: </label>
-            <input
-              type="color"
-              id="background-color"
-              name="background-color"
-              value={backgroundColor}
-              onChange={(e) => setBackgroundColor(e.target.value)}
-            />
+        <div className="kanban-board-header">
+          <Link className="back-link" to="/">
+            🔙
+          </Link>
+          <input
+            className="kanban-title"
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            readOnly={readOnly}
+          />
+          {!readOnly && (
+            <div>
+              <label htmlFor="background-color">Background Color: </label>
+              <input
+                type="color"
+                id="background-color"
+                name="background-color"
+                value={backgroundColor}
+                onChange={(e) => setBackgroundColor(e.target.value)}
+              />
 
-            <br></br>
-            <label htmlFor="background-image-url">Background Image: </label>
-            <input
-              id="background-image-url"
-              name="background-image-url"
-              value={backgroundImageUrl}
-              onChange={(e) => setBackgroundImageUrl(e.target.value)}
-              placeholder="put image link here"
-            />
-          </div>
-        )}
-        <button onClick={handleSubmit}>✏️</button>
-        <div style={{ display: "flex", flexDirection: "row" }}>
+              <br></br>
+              <label htmlFor="background-image-url">Background Image: </label>
+              <input
+                id="background-image-url"
+                name="background-image-url"
+                value={backgroundImageUrl}
+                onChange={(e) => setBackgroundImageUrl(e.target.value)}
+                placeholder="put image link here"
+              />
+            </div>
+          )}
+          <button onClick={handleSubmit}>✏️</button>
+        </div>
+        <div className="kanban-board">
           {board.lists.map((list) => (
             <List
               list={list}

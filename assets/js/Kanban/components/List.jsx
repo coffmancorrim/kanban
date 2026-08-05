@@ -33,27 +33,20 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
   }
 
   return (
-    <div style={{ width: 300, backgroundColor: "yellow", margin: 10 }}>
+    <div className="kanban-column">
       <MutationStatus
         mutations={[{ mutation: updateList, name: "update list" }]}
       />
-      list:
-      <input
-        type="text"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        readOnly={readOnly}
-      />
-      <button onClick={handleSubmit}>✏️</button>
-      <div
-        ref={ref}
-        style={{
-          backgroundColor: "tan",
-          margin: 10,
-          padding: 10,
-          minHeight: 300,
-        }}
-      >
+      <div className="kanban-column-header">
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          readOnly={readOnly}
+        />
+        <button onClick={handleSubmit}>✏️</button>
+      </div>
+      <div ref={ref}>
         {list.cards.map((card, index) => (
           <Card
             card={card}
@@ -63,10 +56,12 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
           />
         ))}
       </div>
-      <button onClick={() => onAddCard(list.id, list.cards.length)}>
-        add card
-      </button>
-      <button onClick={() => onDeleteList(list.id)}>delete list</button>
+      <div className="kanban-column-footer">
+        <button onClick={() => onAddCard(list.id, list.cards.length)}>
+          add card
+        </button>
+        <button onClick={() => onDeleteList(list.id)}>delete list</button>
+      </div>
     </div>
   );
 }
