@@ -142,39 +142,48 @@ export function Board({ boardId }) {
         onDragEnd={onDragEnd}
       >
         <div className="kanban-board-header">
-          <Link className="back-link" to="/">
-            🔙
-          </Link>
-          <input
-            className="kanban-title"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            readOnly={readOnly}
-          />
+          <div className="kanban-board-header-main ">
+            <Link className="back-link" to="/">
+              🔙
+            </Link>
+            <input
+              className="kanban-title"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              readOnly={readOnly}
+              style={
+                !readOnly
+                  ? { backgroundColor: "white", borderRadius: 4 }
+                  : undefined
+              }
+            />
+          </div>
           {!readOnly && (
-            <div>
-              <label htmlFor="background-color">Background Color: </label>
-              <input
-                type="color"
-                id="background-color"
-                name="background-color"
-                value={backgroundColor}
-                onChange={(e) => setBackgroundColor(e.target.value)}
-              />
-
-              <br></br>
-              <label htmlFor="background-image-url">Background Image: </label>
-              <input
-                id="background-image-url"
-                name="background-image-url"
-                value={backgroundImageUrl}
-                onChange={(e) => setBackgroundImageUrl(e.target.value)}
-                placeholder="put image link here"
-              />
+            <div className="kanban-board-header-options">
+              <div className="kanban-board-header-option">
+                <label htmlFor="background-color">Background Color</label>
+                <input
+                  type="color"
+                  id="background-color"
+                  name="background-color"
+                  value={backgroundColor}
+                  onChange={(e) => setBackgroundColor(e.target.value)}
+                />
+              </div>
+              <div className="kanban-board-header-option">
+                <label htmlFor="background-image-url">Background Image</label>
+                <input
+                  id="background-image-url"
+                  name="background-image-url"
+                  value={backgroundImageUrl}
+                  onChange={(e) => setBackgroundImageUrl(e.target.value)}
+                  placeholder="put image link here"
+                />
+              </div>
             </div>
           )}
-          <button onClick={handleSubmit}>✏️</button>
+          <button onClick={handleSubmit}>edit</button>
         </div>
         <div className="kanban-board">
           {board.lists.map((list) => (
@@ -186,8 +195,8 @@ export function Board({ boardId }) {
               onDeleteList={handleDeleteList}
             />
           ))}
+          <button onClick={handleAddList}>add list</button>
         </div>
-        <button onClick={handleAddList}>add list</button>
       </DragDropProvider>
     </div>
   );

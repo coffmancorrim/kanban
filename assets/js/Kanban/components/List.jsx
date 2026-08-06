@@ -43,8 +43,13 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           readOnly={readOnly}
+          style={
+            !readOnly
+              ? { backgroundColor: "white", borderRadius: 4 }
+              : undefined
+          }
         />
-        <button onClick={handleSubmit}>✏️</button>
+        <button onClick={handleSubmit}>edit</button>
       </div>
       <div ref={ref}>
         {list.cards.map((card, index) => (

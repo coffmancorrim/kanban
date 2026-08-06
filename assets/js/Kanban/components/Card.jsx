@@ -51,8 +51,10 @@ export function Card({ card, index, onDeleteCard }) {
         />
       )}
       {imageUrl && <img src={imageUrl} alt="" />}
-      <button onClick={handleSubmit}>✏️</button>
-      <button onClick={(e) => onDeleteCard(card)}>❌</button>
+      <div className="kanban-card-buttons">
+        <button onClick={handleSubmit}>edit</button>
+        <button onClick={(e) => onDeleteCard(card)}>❌</button>
+      </div>
     </div>
   );
 }
