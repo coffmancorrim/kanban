@@ -20,6 +20,10 @@ class CardSerializer(serializers.ModelSerializer):
 class ListSerializer(serializers.ModelSerializer):
     cards = CardSerializer(many=True, read_only=True)
 
+    position = serializers.DecimalField(
+        max_digits=20, decimal_places=10, coerce_to_string=False
+    )
+
     class Meta:
         model = List
         fields = ["id", "name", "position", "cards", "board"]

@@ -12,7 +12,7 @@ class Board(models.Model):
 class List(models.Model):
     name = models.CharField(max_length=255)
     board = models.ForeignKey(Board, on_delete=models.CASCADE, related_name="lists")
-    position = models.PositiveIntegerField()
+    position = models.DecimalField(decimal_places=10, max_digits=20)
 
     class Meta:
         ordering = ["position"]

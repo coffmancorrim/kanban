@@ -149,34 +149,6 @@ export function useDeleteList({ setBoard }) {
   });
 }
 
-export function useUpdateCardPosition() {
-  return useMutation({
-    mutationFn: async ({ cardId, cardPosition, cardList }) => {
-      console.log("Updating:", cardId, cardPosition);
-
-      const response = await fetch(BASE_URL + `card/${cardId}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify({
-          position: cardPosition,
-          list: cardList,
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Update failed:", response.status);
-        throw new Error("Failed to update card position");
-      }
-
-      console.log("Update successful");
-      return response.json();
-    },
-  });
-}
-
 export function useUpdateBoard(boardId) {
   return useMutation({
     mutationFn: async (updatedBoard) => {
@@ -214,6 +186,33 @@ export function useUpdateList(listId) {
   });
 }
 
+export function useUpdateListPosition() {
+  return useMutation({
+    mutationFn: async ({ listId, listPosition }) => {
+      console.log("Updating:", listId, listPosition);
+
+      const response = await fetch(BASE_URL + `list/${listId}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({
+          position: listPosition,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Update failed:", response.status);
+        throw new Error("Failed to update list position");
+      }
+
+      console.log("Update successful");
+      return response.json();
+    },
+  });
+}
+
 export function useUpdateCard(cardId) {
   return useMutation({
     mutationFn: async (updatedCard) => {
@@ -227,6 +226,34 @@ export function useUpdateCard(cardId) {
       });
 
       if (!response.ok) throw new Error("unable to update Card");
+      return response.json();
+    },
+  });
+}
+
+export function useUpdateCardPosition() {
+  return useMutation({
+    mutationFn: async ({ cardId, cardPosition, cardList }) => {
+      console.log("Updating:", cardId, cardPosition);
+
+      const response = await fetch(BASE_URL + `card/${cardId}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({
+          position: cardPosition,
+          list: cardList,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Update failed:", response.status);
+        throw new Error("Failed to update card position");
+      }
+
+      console.log("Update successful");
       return response.json();
     },
   });

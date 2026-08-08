@@ -41,10 +41,20 @@ def board(request, pk):
         return Response(serializer.errors, status=400)
 
     if request.method == "POST":
-        for list in board.lists.all():
-            for index, card in enumerate(list.cards.all()):
-                card.position = index + 1
-                card.save()
+        lists_to_update = []
+        cards_to_update = []
+
+        for listIndex, list in enumerate(board.lists.all()):
+            list.position = listIndex + 1
+            lists_to_update.append(list)
+
+            for cardIndex, card in enumerate(list.cards.all()):
+                card.position = cardIndex + 1
+                cards_to_update.append(card)
+
+        List.objects.bulk_update(lists_to_update, ["position"])
+        Card.objects.bulk_update(cards_to_update, ["position"])
+
         board.updated_count = 0
         board.save()
 
@@ -70,6 +80,11 @@ def list_detail(request, pk):
         serializer = ListSerializer(list, data=request.data, partial=partial)
         if serializer.is_valid():
             serializer.save()
+
+            if list.position % 1 != 0:
+                Board.objects.filter(pk=list.board_id).update(
+                    updated_count=F("updated_count") + 1
+                )
             return Response(serializer.data)
         return Response(serializer.errors, status=400)
 

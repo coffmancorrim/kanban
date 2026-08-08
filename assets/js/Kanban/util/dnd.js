@@ -15,10 +15,20 @@ export const noSelfCollision = ({ dragOperation, droppable }) => {
   });
 };
 
-export function findListAndCardIndex(board, cardId) {
-  console.log("---FIND_LIST_CARD_INDEX");
-  console.log("Card ID:", cardId);
+// export function findListIndex(board, listId) {
+//   if (!board) return;
 
+//   //list id ref is stored as a string so we can tell if its a card or a list
+//   const listIndex = board.lists.findIndex((list) => String(list.id) === listId);
+
+//   if (listIndex !== -1) {
+//     return listIndex;
+//   }
+
+//   return null;
+// }
+
+export function findListAndCardIndex(board, cardId) {
   if (!board) return;
 
   for (let listIndex = 0; listIndex < board.lists.length; listIndex++) {
@@ -27,22 +37,64 @@ export function findListAndCardIndex(board, cardId) {
     );
 
     if (cardIndex !== -1) {
-      console.log("List Index:", listIndex);
-      console.log("Card Index:", cardIndex);
       return [listIndex, cardIndex];
     }
   }
 
-  console.log("ERROR");
   return null;
 }
 
-export function applyDrag(board, sourceId, targetId, isAbove) {
-  console.log("APPLY_DRAG FUNCTION");
-  console.log("INITAL BOARD LISTS:", board.lists);
-  console.log("Source ID:", sourceId);
-  console.log("Target ID:", targetId);
+export function applyListDrag(board, sourceId, targetId, isLeft) {
+  //clone the board
+  const newBoard = {
+    ...board,
+    lists: board.lists.map((list) => ({ ...list, cards: [...list.cards] })),
+  };
 
+  // Get the list that initiated the drag and its original location
+  const sourceListIndex = newBoard.lists.findIndex(
+    (list) => String(list.id) === sourceId,
+  );
+  const sourceList = newBoard.lists[sourceListIndex];
+
+  //remove the list that intiated the drag from the cloned board
+  newBoard.lists.splice(sourceListIndex, 1);
+
+  const targetListIndex = newBoard.lists.findIndex(
+    (list) => String(list.id) === String(targetId),
+  );
+  const targetListPosition = newBoard.lists[targetListIndex].position;
+
+  let updatedList = null;
+
+  if (isLeft) {
+    if (targetListIndex === 0) {
+      updatedList = { ...sourceList, position: 0 };
+      newBoard.lists.splice(0, 0, updatedList);
+    } else {
+      const targetListPosition2 = newBoard.lists[targetListIndex - 1].position;
+      const newPosition = (targetListPosition + targetListPosition2) / 2;
+      updatedList = { ...sourceList, position: newPosition };
+
+      newBoard.lists.splice(targetListIndex, 0, updatedList);
+    }
+  } else {
+    if (targetListIndex === newBoard.lists.length - 1) {
+      updatedList = { ...sourceList, position: targetListPosition + 1 };
+      newBoard.lists.push(updatedList);
+    } else {
+      const targetListPosition2 = newBoard.lists[targetListIndex + 1].position;
+      const newPosition = (targetListPosition + targetListPosition2) / 2;
+      updatedList = { ...sourceList, position: newPosition };
+
+      newBoard.lists.splice(targetListIndex + 1, 0, updatedList);
+    }
+  }
+
+  return { updatedList, newBoard };
+}
+
+export function applyDrag(board, sourceId, targetId, isAbove) {
   //clone the board
   const newBoard = {
     ...board,
@@ -55,7 +107,6 @@ export function applyDrag(board, sourceId, targetId, isAbove) {
     sourceId,
   );
   const sourceCard = newBoard.lists[sourceListIndex].cards[sourceCardIndex];
-  console.log("source card:", sourceCard);
 
   //remove the card that intiated the drag from the cloned board
   newBoard.lists[sourceListIndex].cards.splice(sourceCardIndex, 1);

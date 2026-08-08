@@ -41,7 +41,10 @@ export function Board({ boardId }) {
   const [backgroundColor, setBackgroundColor] = useState("");
   const [readOnly, setReadOnly] = useState(true);
 
-  const { onDragStart, onDragOver, onDragEnd } = useDrag({ board, setBoard });
+  const { onDragStart, onDragOverHelper, onDragEndHelper } = useDrag({
+    board,
+    setBoard,
+  });
   const updateBoard = useUpdateBoard(boardId);
   const updateBoardOnCount = useUpdateBoardOnCount(
     boardId,
@@ -138,8 +141,8 @@ export function Board({ boardId }) {
 
       <DragDropProvider
         onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDragEnd={onDragEnd}
+        onDragOver={onDragOverHelper}
+        onDragEnd={onDragEndHelper}
       >
         <div className="kanban-board-header">
           <div className="kanban-board-header-main ">

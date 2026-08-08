@@ -6,15 +6,16 @@ import { Card } from "./Card.jsx";
 import { MutationStatus } from "./MutationStatus.jsx";
 import { noSelfCollision } from "../util/dnd.js";
 import { useUpdateList } from "../hooks/BoardOperations.js";
+import { useSortable } from "@dnd-kit/react/sortable";
 
 export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
   const [name, setName] = useState(list.name);
   const [position, setPosition] = useState(list.position);
   const [readOnly, setReadOnly] = useState(true);
 
-  const { ref } = useDroppable({
+  const { ref } = useSortable({
     id: String(list.id),
-
+    accept: (source) => typeof source.id === "string",
     collisionDetector: noSelfCollision,
   });
   const updateList = useUpdateList(list.id);
@@ -33,7 +34,7 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
   }
 
   return (
-    <div className="kanban-list">
+    <div className="kanban-list" ref={ref}>
       <MutationStatus
         mutations={[{ mutation: updateList, name: "update list" }]}
       />
@@ -51,7 +52,7 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
         />
         <button onClick={handleSubmit}>edit</button>
       </div>
-      <div ref={ref}>
+      <div>
         {list.cards.map((card, index) => (
           <Card
             card={card}
