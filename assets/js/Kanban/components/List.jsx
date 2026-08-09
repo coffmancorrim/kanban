@@ -7,6 +7,7 @@ import { MutationStatus } from "./MutationStatus.jsx";
 import { noSelfCollision } from "../util/dnd.js";
 import { useUpdateList } from "../hooks/BoardOperations.js";
 import { useSortable } from "@dnd-kit/react/sortable";
+import { GhostInput } from "./GhostInput.jsx";
 
 export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
   const [name, setName] = useState(list.name);
@@ -39,18 +40,11 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
         mutations={[{ mutation: updateList, name: "update list" }]}
       />
       <div className="kanban-column-header">
-        <input
-          type="text"
+        <GhostInput
           value={name}
-          onChange={(e) => setName(e.target.value)}
-          readOnly={readOnly}
-          style={
-            !readOnly
-              ? { backgroundColor: "white", borderRadius: 4 }
-              : undefined
-          }
+          setValue={setName}
+          onSubmit={(newName) => updateList.mutate({ name: newName })}
         />
-        <button onClick={handleSubmit}>edit</button>
       </div>
       <div>
         {list.cards.map((card, index) => (

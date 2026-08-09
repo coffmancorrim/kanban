@@ -18,6 +18,7 @@ import {
 import { useDrag } from "../hooks/useDrag.js";
 import { MutationStatus } from "./MutationStatus.jsx";
 import { LoadingGrid } from "./LoadingGrid.jsx";
+import { GhostInput } from "./GhostInput.jsx";
 
 async function fetchBoard(boardId) {
   const response = await fetch(BASE_URL + `board/${boardId}/`);
@@ -39,7 +40,7 @@ export function Board({ boardId }) {
   const [name, setName] = useState("");
   const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
   const [backgroundColor, setBackgroundColor] = useState("");
-  const [readOnly, setReadOnly] = useState(true);
+  const [isEditable, setIsEditable] = useState(true);
 
   const { onDragStart, onDragOverHelper, onDragEndHelper } = useDrag({
     board,
@@ -63,14 +64,12 @@ export function Board({ boardId }) {
   }, [boardData]);
 
   function handleSubmit() {
-    if (readOnly === false) {
+    if (isEditable === false) {
       const editedBoard = {
-        name: name,
         backgroundColor: backgroundColor,
         backgroundImageUrl: backgroundImageUrl,
       };
       if (
-        name !== board.name ||
         backgroundColor !== board.backgroundColor ||
         backgroundImageUrl !== board.backgroundImageUrl
       ) {
@@ -78,7 +77,7 @@ export function Board({ boardId }) {
       }
     }
 
-    setReadOnly(!readOnly);
+    setIsEditable(!isEditable);
   }
 
   function handleAddList() {
@@ -149,20 +148,14 @@ export function Board({ boardId }) {
             <Link className="back-link" to="/">
               🔙
             </Link>
-            <input
-              className="kanban-title"
-              type="text"
+            <GhostInput
+              className={"kanban-title"}
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              readOnly={readOnly}
-              style={
-                !readOnly
-                  ? { backgroundColor: "white", borderRadius: 4 }
-                  : undefined
-              }
+              setValue={setName}
+              onSubmit={(newName) => updateBoard.mutate({ name: newName })}
             />
           </div>
-          {!readOnly && (
+          {!isEditable && (
             <div className="kanban-board-header-options">
               <div className="kanban-board-header-option">
                 <label htmlFor="background-color">Background Color</label>
