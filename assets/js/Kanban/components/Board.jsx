@@ -19,11 +19,45 @@ import { useDrag } from "../hooks/useDrag.js";
 import { MutationStatus } from "./MutationStatus.jsx";
 import { LoadingGrid } from "./LoadingGrid.jsx";
 import { GhostInput } from "./GhostInput.jsx";
+import { Card } from "./Card.jsx";
 
 async function fetchBoard(boardId) {
   const response = await fetch(BASE_URL + `board/${boardId}/`);
   if (!response.ok) throw new Error("Failed to fetch board");
   return await response.json();
+}
+
+export function faker({ boardId }) {
+  const {
+    data: boardData = { lists: [] },
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["board", boardId],
+    queryFn: () => fetchBoard(boardId),
+  });
+
+  const [board, setBoard] = useState({});
+
+  useEffect(() => {
+    setBoard(boardData);
+  }, [boardData]);
+
+  return (
+    <div>
+      {board.lists &&
+        Object.values(boardData.lists).map((list) => (
+          <div>
+            <h2>{list.name}</h2>
+            {board.cards &&
+              Object.values(boardData.cards)
+                .filter((card) => card.list === list.id)
+                .map((card) => <p>{card.description}</p>)}
+          </div>
+        ))}
+      <pre>{JSON.stringify(board, null, 2)}</pre>;
+    </div>
+  );
 }
 
 export function Board({ boardId }) {
@@ -37,9 +71,9 @@ export function Board({ boardId }) {
   });
 
   const [board, setBoard] = useState({ lists: [] });
-  const [name, setName] = useState("");
-  const [backgroundImageUrl, setBackgroundImageUrl] = useState("");
-  const [backgroundColor, setBackgroundColor] = useState("");
+  const [lists, setLists] = useState({});
+  const [cards, setCards] = useState({});
+
   const [isEditable, setIsEditable] = useState(true);
 
   const { onDragStart, onDragOverHelper, onDragEndHelper } = useDrag({
@@ -57,10 +91,9 @@ export function Board({ boardId }) {
   const deleteList = useDeleteList({ setBoard });
 
   useEffect(() => {
-    setBoard(boardData);
-    setName(boardData.name ?? "");
-    setBackgroundColor(boardData.backgroundColor ?? "");
-    setBackgroundImageUrl(boardData.backgroundImageUrl ?? "");
+    setBoard(boardData.board);
+    setLists(boardData.lists);
+    setCards(boardData.cards);
   }, [boardData]);
 
   function handleSubmit() {
@@ -121,79 +154,95 @@ export function Board({ boardId }) {
     );
 
   return (
-    <div
-      className="kanban-body"
-      style={{
-        backgroundColor: backgroundColor,
-        backgroundImage: `url(${backgroundImageUrl})`,
-      }}
-    >
-      <MutationStatus
-        mutations={[
-          { mutation: addList, name: "add list" },
-          { mutation: addCard, name: "add card" },
-          { mutation: deleteList, name: "delete list" },
-          { mutation: deleteCard, name: "delete card" },
-          { mutation: updateBoard, name: "update board" },
-        ]}
-      />
-
-      <DragDropProvider
-        onDragStart={onDragStart}
-        onDragOver={onDragOverHelper}
-        onDragEnd={onDragEndHelper}
+    board && (
+      <div
+        className="kanban-body"
+        style={{
+          backgroundColor: board.backgroundColor,
+          backgroundImage: `url(${board.backgroundImageUrl})`,
+        }}
       >
-        <div className="kanban-board-header">
-          <div className="kanban-board-header-main ">
-            <Link className="back-link" to="/">
-              🔙
-            </Link>
-            <GhostInput
-              className={"kanban-title"}
-              value={name}
-              setValue={setName}
-              onSubmit={(newName) => updateBoard.mutate({ name: newName })}
-            />
-          </div>
-          {!isEditable && (
-            <div className="kanban-board-header-options">
-              <div className="kanban-board-header-option">
-                <label htmlFor="background-color">Background Color</label>
-                <input
-                  type="color"
-                  id="background-color"
-                  name="background-color"
-                  value={backgroundColor}
-                  onChange={(e) => setBackgroundColor(e.target.value)}
-                />
-              </div>
-              <div className="kanban-board-header-option">
-                <label htmlFor="background-image-url">Background Image</label>
-                <input
-                  id="background-image-url"
-                  name="background-image-url"
-                  value={backgroundImageUrl}
-                  onChange={(e) => setBackgroundImageUrl(e.target.value)}
-                  placeholder="put image link here"
-                />
-              </div>
+        <MutationStatus
+          mutations={[
+            { mutation: addList, name: "add list" },
+            { mutation: addCard, name: "add card" },
+            { mutation: deleteList, name: "delete list" },
+            { mutation: deleteCard, name: "delete card" },
+            { mutation: updateBoard, name: "update board" },
+          ]}
+        />
+
+        <DragDropProvider
+          onDragStart={onDragStart}
+          onDragOver={onDragOverHelper}
+          onDragEnd={onDragEndHelper}
+        >
+          <div className="kanban-board-header">
+            <div className="kanban-board-header-main ">
+              <Link className="back-link" to="/">
+                🔙
+              </Link>
+              <GhostInput
+                className={"kanban-title"}
+                value={board.name}
+                setValue={setBoard}
+                onSubmit={(newName) => updateBoard.mutate({ name: newName })}
+              />
             </div>
-          )}
-          <button onClick={handleSubmit}>edit</button>
-        </div>
-        <div className="kanban-board">
-          {board.lists.map((list) => (
-            <List
-              list={list}
-              key={list.id}
-              onAddCard={handleAddCard}
-              onDeleteCard={handleDeleteCard}
-              onDeleteList={handleDeleteList}
-            />
-          ))}
-          <button onClick={handleAddList}>add list</button>
-        </div>
-      </DragDropProvider>
-    </div>
+            {!isEditable && (
+              <div className="kanban-board-header-options">
+                <div className="kanban-board-header-option">
+                  <label htmlFor="background-color">Background Color</label>
+                  <input
+                    type="color"
+                    id="background-color"
+                    name="background-color"
+                    value={board.backgroundColor}
+                    onChange={(e) => setBackgroundColor(e.target.value)}
+                  />
+                </div>
+                <div className="kanban-board-header-option">
+                  <label htmlFor="background-image-url">Background Image</label>
+                  <input
+                    id="background-image-url"
+                    name="background-image-url"
+                    value={board.backgroundImageUrl}
+                    onChange={(e) => setBackgroundImageUrl(e.target.value)}
+                    placeholder="put image link here"
+                  />
+                </div>
+              </div>
+            )}
+            <button onClick={handleSubmit}>edit</button>
+          </div>
+          <div className="kanban-board">
+            {lists &&
+              Object.values(boardData.lists).map((list) => (
+                <List
+                  list={list}
+                  key={list.id}
+                  onAddCard={handleAddCard}
+                  onDeleteCard={handleDeleteCard}
+                  onDeleteList={handleDeleteList}
+                >
+                  {cards &&
+                    Object.values(boardData.cards)
+                      .filter((card) => card.list === list.id)
+                      .map((card, index) => (
+                        <Card
+                          card={card}
+                          key={card.id}
+                          index={index}
+                          onDeleteCard={handleDeleteCard}
+                        />
+                      ))}
+                </List>
+              ))}
+
+            <button onClick={handleAddList}>add list</button>
+          </div>
+        </DragDropProvider>
+      </div>
+    )
   );
 }

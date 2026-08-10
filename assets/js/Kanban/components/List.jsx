@@ -9,7 +9,13 @@ import { useUpdateList } from "../hooks/BoardOperations.js";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { GhostInput } from "./GhostInput.jsx";
 
-export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
+export function List({
+  list,
+  children,
+  onAddCard,
+  onDeleteCard,
+  onDeleteList,
+}) {
   const [name, setName] = useState(list.name);
   const [position, setPosition] = useState(list.position);
   const [readOnly, setReadOnly] = useState(true);
@@ -46,16 +52,7 @@ export function List({ list, onAddCard, onDeleteCard, onDeleteList }) {
           onSubmit={(newName) => updateList.mutate({ name: newName })}
         />
       </div>
-      <div>
-        {list.cards.map((card, index) => (
-          <Card
-            card={card}
-            key={card.id}
-            index={index}
-            onDeleteCard={onDeleteCard}
-          />
-        ))}
-      </div>
+      <div>{children}</div>
       <div className="kanban-column-footer">
         <button onClick={() => onAddCard(list.id, list.cards.length)}>
           add card
