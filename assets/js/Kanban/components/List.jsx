@@ -45,6 +45,9 @@ export function List({
       <MutationStatus
         mutations={[{ mutation: updateList, name: "update list" }]}
       />
+      <h2>
+        id: {list.id} pos: {list.position}
+      </h2>
       <div className="kanban-column-header">
         <GhostInput
           value={name}
@@ -54,9 +57,7 @@ export function List({
       </div>
       <div>{children}</div>
       <div className="kanban-column-footer">
-        <button onClick={() => onAddCard(list.id, list.cards.length)}>
-          add card
-        </button>
+        <button onClick={() => onAddCard(list.id)}>add card</button>
         <button onClick={() => onDeleteList(list.id)}>delete list</button>
       </div>
     </div>

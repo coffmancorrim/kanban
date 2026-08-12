@@ -27,39 +27,6 @@ async function fetchBoard(boardId) {
   return await response.json();
 }
 
-export function faker({ boardId }) {
-  const {
-    data: boardData = { lists: [] },
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["board", boardId],
-    queryFn: () => fetchBoard(boardId),
-  });
-
-  const [board, setBoard] = useState({});
-
-  useEffect(() => {
-    setBoard(boardData);
-  }, [boardData]);
-
-  return (
-    <div>
-      {board.lists &&
-        Object.values(boardData.lists).map((list) => (
-          <div>
-            <h2>{list.name}</h2>
-            {board.cards &&
-              Object.values(boardData.cards)
-                .filter((card) => card.list === list.id)
-                .map((card) => <p>{card.description}</p>)}
-          </div>
-        ))}
-      <pre>{JSON.stringify(board, null, 2)}</pre>;
-    </div>
-  );
-}
-
 export function Board({ boardId }) {
   const {
     data: boardData = { lists: [] },
@@ -77,16 +44,18 @@ export function Board({ boardId }) {
   const [isEditable, setIsEditable] = useState(true);
 
   const { onDragStart, onDragOverHelper, onDragEndHelper } = useDrag({
-    board,
-    setBoard,
+    cards,
+    setCards,
+    lists,
+    setLists,
   });
   const updateBoard = useUpdateBoard(boardId);
   const updateBoardOnCount = useUpdateBoardOnCount(
     boardId,
     boardData.updatedCount,
   );
-  const addList = useAddList({ setBoard });
-  const addCard = useAddCard({ setBoard });
+  const addList = useAddList({ setLists });
+  const addCard = useAddCard({ setCards });
   const deleteCard = useDeleteCard({ setBoard });
   const deleteList = useDeleteList({ setBoard });
 
@@ -114,27 +83,37 @@ export function Board({ boardId }) {
   }
 
   function handleAddList() {
-    if (board.lists.length != 0) {
-      addList.mutate({
-        name: "enter name here",
-        position: board.lists[board.lists.length - 1].position + 1,
-        board: board.id,
-      });
-    } else {
-      addList.mutate({
-        name: "enter name here",
-        position: 1,
-        board: board.id,
-      });
-    }
+    const lastobject = Object.values(lists)
+      .sort((a, b) => a.position - b.position)
+      .at(-1);
+    addList.mutate({
+      name: "enter name here",
+      position: lastobject.position + 1,
+      board: board.id,
+    });
   }
 
-  function handleAddCard(listId, listPosition) {
-    addCard.mutate({
-      description: "enter name here",
-      position: listPosition,
-      list: listId,
-    });
+  function handleAddCard(listId) {
+    const cardsList = Object.values(cards).filter(
+      (card) => card.list === listId,
+    );
+    if (cardsList.length === 0) {
+      addCard.mutate({
+        description: "enter name here",
+        position: 1,
+        list: listId,
+      });
+    } else {
+      const lastobject = cardsList
+        .sort((a, b) => a.position - b.position)
+        .at(-1);
+
+      addCard.mutate({
+        description: "enter name here",
+        position: lastobject.position + 1,
+        list: listId,
+      });
+    }
   }
 
   function handleDeleteCard(card) {
@@ -217,27 +196,30 @@ export function Board({ boardId }) {
           </div>
           <div className="kanban-board">
             {lists &&
-              Object.values(boardData.lists).map((list) => (
-                <List
-                  list={list}
-                  key={list.id}
-                  onAddCard={handleAddCard}
-                  onDeleteCard={handleDeleteCard}
-                  onDeleteList={handleDeleteList}
-                >
-                  {cards &&
-                    Object.values(boardData.cards)
-                      .filter((card) => card.list === list.id)
-                      .map((card, index) => (
-                        <Card
-                          card={card}
-                          key={card.id}
-                          index={index}
-                          onDeleteCard={handleDeleteCard}
-                        />
-                      ))}
-                </List>
-              ))}
+              Object.values(lists)
+                .sort((a, b) => a.position - b.position)
+                .map((list) => (
+                  <List
+                    list={list}
+                    key={list.id}
+                    onAddCard={handleAddCard}
+                    onDeleteCard={handleDeleteCard}
+                    onDeleteList={handleDeleteList}
+                  >
+                    {cards &&
+                      Object.values(cards)
+                        .filter((card) => card.list === list.id)
+                        .sort((a, b) => a.position - b.position)
+                        .map((card, index) => (
+                          <Card
+                            card={card}
+                            key={card.id}
+                            index={index}
+                            onDeleteCard={handleDeleteCard}
+                          />
+                        ))}
+                  </List>
+                ))}
 
             <button onClick={handleAddList}>add list</button>
           </div>

@@ -38,6 +38,9 @@ export function Card({ card, index, onDeleteCard }) {
       <MutationStatus
         mutations={[{ mutation: updateCard, name: "update card" }]}
       />
+      <h2>
+        id: {card.id} pos: {card.position}
+      </h2>
       <input
         value={description}
         onChange={(e) => setDescription(e.target.value)}

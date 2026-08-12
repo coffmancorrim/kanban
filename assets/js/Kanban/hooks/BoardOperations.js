@@ -28,7 +28,7 @@ export function useUpdateBoardOnCount(boardId, updatedCount) {
   }, [updatedCount]);
 }
 
-export function useAddList({ setBoard }) {
+export function useAddList({ setLists }) {
   return useMutation({
     mutationFn: async (newList) => {
       const response = await fetch(BASE_URL + "list/", {
@@ -48,15 +48,15 @@ export function useAddList({ setBoard }) {
     },
 
     onSuccess: (newList) => {
-      setBoard((previousBoard) => ({
-        ...previousBoard,
-        lists: [...previousBoard.lists, newList],
+      setLists((previousLists) => ({
+        ...previousLists,
+        [newList.id]: { newList },
       }));
     },
   });
 }
 
-export function useAddCard({ setBoard }) {
+export function useAddCard({ setCards }) {
   return useMutation({
     mutationFn: async (newCard) => {
       const response = await fetch(BASE_URL + `card/`, {
@@ -76,13 +76,9 @@ export function useAddCard({ setBoard }) {
     },
 
     onSuccess: (newCard) => {
-      setBoard((previousBoard) => ({
-        ...previousBoard,
-        lists: previousBoard.lists.map((list) =>
-          list.id == newCard.list
-            ? { ...list, cards: [...list.cards, newCard] }
-            : list,
-        ),
+      setCards((previousCards) => ({
+        ...previousCards,
+        [newCard.id]: newCard,
       }));
     },
   });

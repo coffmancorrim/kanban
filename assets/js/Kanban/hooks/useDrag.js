@@ -5,15 +5,22 @@ import {
   useUpdateListPosition,
 } from "./BoardOperations";
 
-export function useDrag({ board, setBoard }) {
+export function useDrag({ cards, setCards, lists, setLists }) {
   const snapshotRef = useRef(null);
-  const lastTargetRef = useRef({ id: null, isAbove: null });
+  const lastTargetRef = useRef({ id: null, isAbove: null, isLeft: null });
   const updateCardPosition = useUpdateCardPosition();
   const updateListPosition = useUpdateListPosition();
 
-  function onDragStart() {
-    snapshotRef.current = board;
-    lastTargetRef.current = { id: null, isAbove: null };
+  function onDragStart(event) {
+    const sourceId = event.operation.source?.id;
+    const targetId = event.operation.target?.id ?? null;
+    if (typeof sourceId === "string") {
+      snapshotRef.current = lists;
+    } else {
+      snapshotRef.current = cards;
+    }
+
+    lastTargetRef.current = { id: null, isAbove: null, isLeft: null };
   }
 
   function onDragOverHelper(event) {
@@ -47,13 +54,13 @@ export function useDrag({ board, setBoard }) {
 
     lastTargetRef.current = { id: targetId, isLeft };
 
-    const { newBoard } = applyListDrag(
+    const { newLists } = applyListDrag(
       snapshotRef.current,
       sourceId,
       targetId,
       isLeft,
     );
-    setBoard(newBoard);
+    setLists(newLists);
   }
 
   function onDragOver(event, sourceId, targetId) {
@@ -70,13 +77,13 @@ export function useDrag({ board, setBoard }) {
 
     lastTargetRef.current = { id: targetId, isAbove };
 
-    const { newBoard } = applyDrag(
+    const { newCards } = applyDrag(
       snapshotRef.current,
       sourceId,
       targetId,
       isAbove,
     );
-    setBoard(newBoard);
+    setCards(newCards);
   }
 
   function onDragEndHelper(event) {
@@ -84,7 +91,12 @@ export function useDrag({ board, setBoard }) {
     const targetId = event.operation.target?.id ?? null;
 
     if (event.canceled || !targetId || sourceId == targetId) {
-      setBoard(snapshotRef.current);
+      if (typeof sourceId === "string") {
+        setLists(snapshotRef.current);
+      } else {
+        setCards(snapshotRef.current);
+      }
+
       return;
     }
 
@@ -101,13 +113,15 @@ export function useDrag({ board, setBoard }) {
     const targetCenterX = event.operation.target?.shape?.center.x;
     const isLeft = pointerX < targetCenterX;
 
-    const { updatedList, newBoard } = applyListDrag(
+    const { updatedList, newLists } = applyListDrag(
       snapshotRef.current,
       sourceId,
       targetId,
       isLeft,
     );
-    setBoard(newBoard);
+    console.log("updatedList", updatedList);
+    console.log("NEW LISTS", newLists);
+    setLists(newLists);
 
     updateListPosition.mutate({
       listId: updatedList.id,
@@ -123,13 +137,13 @@ export function useDrag({ board, setBoard }) {
     const targetCenterY = event.operation.target?.shape?.center.y;
     const isAbove = pointerY < targetCenterY;
 
-    const { updatedCard, newBoard } = applyDrag(
+    const { updatedCard, newCards } = applyDrag(
       snapshotRef.current,
       sourceId,
       targetId,
       isAbove,
     );
-    setBoard(newBoard);
+    setCards(newCards);
 
     updateCardPosition.mutate({
       cardId: updatedCard.id,

@@ -15,206 +15,195 @@ export const noSelfCollision = ({ dragOperation, droppable }) => {
   });
 };
 
-// export function findListIndex(board, listId) {
-//   if (!board) return;
+export function applyListDrag(lists, sourceId, targetId, isLeft) {
+  // Get the list that initiated the drag and its original location
+  const sourceList = lists[sourceId];
+  const targetList = lists[targetId];
 
-//   //list id ref is stored as a string so we can tell if its a card or a list
-//   const listIndex = board.lists.findIndex((list) => String(list.id) === listId);
+  let lowestPositionList = { position: 99999999 };
+  let highestPositionList = { position: -99999999 };
+  let maxPositionListLeftOfTarget = { position: -99999999 };
+  let minPositionListRightOfTarget = { position: 99999999 };
 
-//   if (listIndex !== -1) {
-//     return listIndex;
-//   }
+  for (const list of Object.values(lists)) {
+    if (lowestPositionList.position > list.position) {
+      lowestPositionList = list;
+    } else if (highestPositionList.position < list.position) {
+      highestPositionList = list;
+    }
 
-//   return null;
-// }
-
-export function findListAndCardIndex(board, cardId) {
-  if (!board) return;
-
-  for (let listIndex = 0; listIndex < board.lists.length; listIndex++) {
-    const cardIndex = board.lists[listIndex].cards.findIndex(
-      (card) => card.id === cardId,
-    );
-
-    if (cardIndex !== -1) {
-      return [listIndex, cardIndex];
+    if (
+      list.position < targetList.position &&
+      list.position > maxPositionListLeftOfTarget.position
+    ) {
+      maxPositionListLeftOfTarget = list;
+    }
+    if (
+      list.position > targetList.position &&
+      list.position < minPositionListRightOfTarget.position
+    ) {
+      minPositionListRightOfTarget = list;
     }
   }
-
-  return null;
-}
-
-export function applyListDrag(board, sourceId, targetId, isLeft) {
-  //clone the board
-  const newBoard = {
-    ...board,
-    lists: board.lists.map((list) => ({ ...list, cards: [...list.cards] })),
-  };
-
-  // Get the list that initiated the drag and its original location
-  const sourceListIndex = newBoard.lists.findIndex(
-    (list) => String(list.id) === sourceId,
-  );
-  const sourceList = newBoard.lists[sourceListIndex];
-
-  //remove the list that intiated the drag from the cloned board
-  newBoard.lists.splice(sourceListIndex, 1);
-
-  const targetListIndex = newBoard.lists.findIndex(
-    (list) => String(list.id) === String(targetId),
-  );
-  const targetListPosition = newBoard.lists[targetListIndex].position;
 
   let updatedList = null;
-
   if (isLeft) {
-    if (targetListIndex === 0) {
-      updatedList = { ...sourceList, position: 0 };
-      newBoard.lists.splice(0, 0, updatedList);
+    if (lowestPositionList === targetList) {
+      updatedList = {
+        ...sourceList,
+        position: lowestPositionList.position - 1,
+      };
     } else {
-      const targetListPosition2 = newBoard.lists[targetListIndex - 1].position;
-      const newPosition = (targetListPosition + targetListPosition2) / 2;
+      const newPosition =
+        (targetList.position + maxPositionListLeftOfTarget.position) / 2;
       updatedList = { ...sourceList, position: newPosition };
-
-      newBoard.lists.splice(targetListIndex, 0, updatedList);
     }
   } else {
-    if (targetListIndex === newBoard.lists.length - 1) {
-      updatedList = { ...sourceList, position: targetListPosition + 1 };
-      newBoard.lists.push(updatedList);
+    if (highestPositionList === targetList) {
+      updatedList = { ...sourceList, position: targetList.position + 1 };
     } else {
-      const targetListPosition2 = newBoard.lists[targetListIndex + 1].position;
-      const newPosition = (targetListPosition + targetListPosition2) / 2;
+      const newPosition =
+        (targetList.position + minPositionListRightOfTarget.position) / 2;
       updatedList = { ...sourceList, position: newPosition };
-
-      newBoard.lists.splice(targetListIndex + 1, 0, updatedList);
     }
   }
 
-  return { updatedList, newBoard };
+  console.log(updatedList);
+  const newLists = { ...lists, [sourceList.id]: updatedList };
+
+  return { updatedList, newLists };
 }
 
-export function applyDrag(board, sourceId, targetId, isAbove) {
-  //clone the board
-  const newBoard = {
-    ...board,
-    lists: board.lists.map((list) => ({ ...list, cards: [...list.cards] })),
-  };
-
+export function applyDrag(cards, sourceId, targetId, isAbove) {
   // Get the card that initiated the drag and its original location
-  const [sourceListIndex, sourceCardIndex] = findListAndCardIndex(
-    newBoard,
-    sourceId,
-  );
-  const sourceCard = newBoard.lists[sourceListIndex].cards[sourceCardIndex];
 
-  //remove the card that intiated the drag from the cloned board
-  newBoard.lists[sourceListIndex].cards.splice(sourceCardIndex, 1);
+  const sourceCard = cards[sourceId];
+
+  console.log("cards:", cards);
+  console.log("sourceId:", sourceId);
+  console.log("targetId:", targetId);
+  console.log("isAbove:", isAbove);
+  console.log("sourceCard:", sourceCard);
 
   // Get the drag target and its location.
   // Determine whether the drag target is a list or a card.
   let updatedCard = null;
   if (typeof targetId === "string") {
+    console.log("is a list:");
     //If the dragged location is a list
-    const targetListIndex = newBoard.lists.findIndex(
-      (list) => String(list.id) === String(targetId),
-    );
+
+    let isListEmpty = true;
+    let lowestPositionCard = { position: 99999999 };
+    let highestPositionCard = { position: -99999999 };
+
+    for (const card of Object.values(cards)) {
+      if (Number(targetId) === card.list) {
+        isListEmpty = false;
+
+        if (lowestPositionCard.position > card.position) {
+          lowestPositionCard = card;
+        } else if (highestPositionCard.position < card.position) {
+          highestPositionCard = card;
+        }
+      }
+    }
 
     //Add card to new position
-    if (newBoard.lists[targetListIndex].cards.length === 0) {
+    if (isListEmpty) {
       updatedCard = {
         ...sourceCard,
         position: 0,
-        list: newBoard.lists[targetListIndex].id,
+        list: Number(targetId),
       };
-      newBoard.lists[targetListIndex].cards.push(updatedCard);
     } else if (isAbove) {
       updatedCard = {
         ...sourceCard,
-        position: newBoard.lists[targetListIndex].cards[0].position - 1,
-        list: newBoard.lists[targetListIndex].id,
+        position: lowestPositionCard.position - 1,
+        list: Number(targetId),
       };
-      newBoard.lists[targetListIndex].cards.splice(0, 0, updatedCard);
     } else {
-      const lastCard =
-        newBoard.lists[targetListIndex].cards[
-          newBoard.lists[targetListIndex].cards.length - 1
-        ];
       updatedCard = {
         ...sourceCard,
-        position: lastCard.position + 1,
-        list: newBoard.lists[targetListIndex].id,
+        position: highestPositionCard.position + 1,
+        list: Number(targetId),
       };
-      newBoard.lists[targetListIndex].cards.push(updatedCard);
     }
 
-    return { updatedCard, newBoard };
+    const newCards = { ...cards, [sourceCard.id]: updatedCard };
+
+    return { updatedCard, newCards };
   }
 
   //if the dragged location is another card
-  const [targetListIndex, targetCardIndex] = findListAndCardIndex(
-    newBoard,
-    targetId,
-  );
+  const targetCard = cards[targetId];
+  console.log("is a card:");
 
-  // add card to new position
-  const targetCardPosition =
-    newBoard.lists[targetListIndex].cards[targetCardIndex].position;
-  if (isAbove) {
-    if (targetCardIndex === 0) {
-      updatedCard = {
-        ...sourceCard,
-        position: targetCardPosition - 1,
-        list: newBoard.lists[targetListIndex].id,
-      };
-      newBoard.lists[targetListIndex].cards.splice(
-        targetCardIndex,
-        0,
-        updatedCard,
-      );
-    } else {
-      const targetCardPosition2 =
-        newBoard.lists[targetListIndex].cards[targetCardIndex - 1].position;
+  let lowestPositionCard = { position: 99999999 };
+  let highestPositionCard = { position: -99999999 };
+  let maxPositionCardAboveOfTarget = { position: -99999999 };
+  let minPositionCardBelowOfTarget = { position: 99999999 };
 
-      const newPosition = (targetCardPosition + targetCardPosition2) / 2;
-
-      updatedCard = {
-        ...sourceCard,
-        position: newPosition,
-        list: newBoard.lists[targetListIndex].id,
-      };
-
-      newBoard.lists[targetListIndex].cards.splice(
-        targetCardIndex,
-        0,
-        updatedCard,
-      );
+  for (const card of Object.values(cards).filter(
+    (card) => card.list === targetCard.list,
+  )) {
+    if (lowestPositionCard.position > card.position) {
+      lowestPositionCard = card;
+    } else if (highestPositionCard.position < card.position) {
+      highestPositionCard = card;
     }
-  } else {
-    if (targetCardIndex === newBoard.lists[targetListIndex].cards.length - 1) {
-      updatedCard = {
-        ...sourceCard,
-        position: targetCardPosition + 1,
-        list: newBoard.lists[targetListIndex].id,
-      };
-      newBoard.lists[targetListIndex].cards.push(updatedCard);
-    } else {
-      const targetCardPosition2 =
-        newBoard.lists[targetListIndex].cards[targetCardIndex + 1].position;
-      const newPosition = (targetCardPosition + targetCardPosition2) / 2;
 
-      updatedCard = {
-        ...sourceCard,
-        position: newPosition,
-        list: newBoard.lists[targetListIndex].id,
-      };
-      newBoard.lists[targetListIndex].cards.splice(
-        targetCardIndex + 1,
-        0,
-        updatedCard,
-      );
+    if (
+      card.position < targetCard.position &&
+      card.position > maxPositionCardAboveOfTarget.position
+    ) {
+      maxPositionCardAboveOfTarget = card;
+    }
+    if (
+      card.position > targetCard.position &&
+      card.position < minPositionCardBelowOfTarget.position
+    ) {
+      minPositionCardBelowOfTarget = card;
     }
   }
 
-  return { updatedCard, newBoard };
+  // add card to new position
+  if (isAbove) {
+    if (lowestPositionCard === targetCard) {
+      updatedCard = {
+        ...sourceCard,
+        position: targetCard.position - 1,
+        list: targetCard.list,
+      };
+    } else {
+      const newPosition =
+        (targetCard.position + maxPositionCardAboveOfTarget.position) / 2;
+
+      updatedCard = {
+        ...sourceCard,
+        position: newPosition,
+        list: targetCard.list,
+      };
+    }
+  } else {
+    if (highestPositionCard === targetCard) {
+      updatedCard = {
+        ...sourceCard,
+        position: targetCard.position + 1,
+        list: targetCard.list,
+      };
+    } else {
+      const newPosition =
+        (targetCard.position + minPositionCardBelowOfTarget.position) / 2;
+
+      updatedCard = {
+        ...sourceCard,
+        position: newPosition,
+        list: targetCard.list,
+      };
+    }
+  }
+
+  const newCards = { ...cards, [sourceCard.id]: updatedCard };
+
+  return { updatedCard, newCards };
 }
