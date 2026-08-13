@@ -124,11 +124,14 @@ export function Board({ boardId }) {
     deleteCard.mutate(card);
   }
 
-  function handleChangeCardName(newName, card) {
+  function handleCardNameChange(newName, card) {
     setCards({ ...cards, [card.id]: { ...card, name: newName } });
   }
+  function handleCardImageChange(newImageUrl, card) {
+    setCards({ ...cards, [card.id]: { ...card, imageUrl: newImageUrl } });
+  }
 
-  function handleChangeListName(newName, list) {
+  function handleListNameChange(newName, list) {
     setLists({ ...lists, [list.id]: { ...list, name: newName } });
   }
 
@@ -220,7 +223,7 @@ export function Board({ boardId }) {
                   <List
                     list={list}
                     key={list.id}
-                    onListNameChange={handleChangeListName}
+                    onListNameChange={handleListNameChange}
                     onAddCard={handleAddCard}
                     onDeleteCard={handleDeleteCard}
                     onDeleteList={handleDeleteList}
@@ -234,7 +237,8 @@ export function Board({ boardId }) {
                             card={card}
                             key={card.id}
                             index={index}
-                            onCardNameChange={handleChangeCardName}
+                            onCardNameChange={handleCardNameChange}
+                            onCardImageChange={handleCardImageChange}
                             onDeleteCard={handleDeleteCard}
                           />
                         ))}

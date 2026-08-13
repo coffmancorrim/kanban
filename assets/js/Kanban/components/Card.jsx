@@ -7,11 +7,13 @@ import { noSelfCollision } from "../util/dnd.js";
 import { useUpdateCard } from "../hooks/BoardOperations.js";
 import { GhostInput } from "./GhostInput.jsx";
 
-export function Card({ card, onCardNameChange, index, onDeleteCard }) {
-  const [description, setDescription] = useState(card.description);
-  const [imageUrl, setImageUrl] = useState(card.imageUrl);
-  const [readOnly, setReadOnly] = useState(true);
-
+export function Card({
+  card,
+  onCardNameChange,
+  onCardImageChange,
+  index,
+  onDeleteCard,
+}) {
   const { ref, isDragSource } = useSortable({
     id: card.id,
     index: index,
@@ -20,44 +22,41 @@ export function Card({ card, onCardNameChange, index, onDeleteCard }) {
   });
   const updateCard = useUpdateCard(card.id);
 
-  function handleSubmit() {
-    if (readOnly === false) {
-      const editedCard = {
-        description: description,
-        imageUrl: imageUrl,
-      };
-      if (description !== card.description || imageUrl !== card.imageUrl) {
-        updateCard.mutate(editedCard);
-      }
-    }
-
-    setReadOnly(!readOnly);
-  }
-
   return (
-    <div ref={ref} className="kanban-card">
+    <div
+      ref={ref}
+      className="kanban-card"
+      style={card.imageUrl != "" ? { padding: 0 } : {}}
+    >
       <MutationStatus
         mutations={[{ mutation: updateCard, name: "update card" }]}
       />
-      <h2>
-        id: {card.id} pos: {card.position}
-      </h2>
-      <GhostInput
-        value={card.description}
-        setValue={(newName) => onCardNameChange(newName, card)}
-        onSubmit={(newName) => updateCard.mutate({ description: newName })}
-      />
-
-      {!readOnly && (
-        <input
-          value={imageUrl}
-          onChange={(e) => setImageUrl(e.target.value)}
-          placeholder="put image link here"
-        />
+      {!card.imageUrl ? (
+        <>
+          <h2>
+            id: {card.id} pos: {card.position}
+          </h2>
+          <GhostInput
+            value={card.description}
+            setValue={(newName) => onCardNameChange(newName, card)}
+            onSubmit={(newName) => updateCard.mutate({ description: newName })}
+          />
+          <GhostInput
+            value={card.imageUrl}
+            setValue={(newImageUrl) => onCardImageChange(newImageUrl, card)}
+            onSubmit={(newImageUrl) =>
+              updateCard.mutate({ imageUrl: newImageUrl })
+            }
+          />
+        </>
+      ) : (
+        <img className="kanban-card-image" src={card.imageUrl} />
       )}
-      {imageUrl && <img src={imageUrl} alt="" />}
+
       <div className="kanban-card-buttons">
-        <button onClick={handleSubmit}>edit</button>
+        {card.imageUrl && (
+          <button onClick={() => onCardImageChange("", card)}>🅧</button>
+        )}
         <button onClick={(e) => onDeleteCard(card)}>❌</button>
       </div>
     </div>

@@ -207,6 +207,10 @@ a {
   flex-basis: 100%;
 }
 
+.kanban-card-image {
+  width: 100%;
+}
+
 .kanban-card-buttons {
   display: flex;
   justify-content: right;
