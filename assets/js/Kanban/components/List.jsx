@@ -12,6 +12,7 @@ import { GhostInput } from "./GhostInput.jsx";
 export function List({
   list,
   children,
+  onListNameChange,
   onAddCard,
   onDeleteCard,
   onDeleteList,
@@ -50,8 +51,8 @@ export function List({
       </h2>
       <div className="kanban-column-header">
         <GhostInput
-          value={name}
-          setValue={setName}
+          value={list.name}
+          setValue={(newName) => onListNameChange(newName, list)}
           onSubmit={(newName) => updateList.mutate({ name: newName })}
         />
       </div>

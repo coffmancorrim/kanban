@@ -56,8 +56,8 @@ export function Board({ boardId }) {
   );
   const addList = useAddList({ setLists });
   const addCard = useAddCard({ setCards });
-  const deleteCard = useDeleteCard({ setBoard });
-  const deleteList = useDeleteList({ setBoard });
+  const deleteCard = useDeleteCard({ setCards });
+  const deleteList = useDeleteList({ setLists });
 
   useEffect(() => {
     setBoard(boardData.board);
@@ -68,29 +68,33 @@ export function Board({ boardId }) {
   function handleSubmit() {
     if (isEditable === false) {
       const editedBoard = {
-        backgroundColor: backgroundColor,
-        backgroundImageUrl: backgroundImageUrl,
+        backgroundColor: board.backgroundColor,
+        backgroundImageUrl: board.backgroundImageUrl,
       };
-      if (
-        backgroundColor !== board.backgroundColor ||
-        backgroundImageUrl !== board.backgroundImageUrl
-      ) {
-        updateBoard.mutate(editedBoard);
-      }
+      updateBoard.mutate(editedBoard);
     }
 
     setIsEditable(!isEditable);
   }
 
   function handleAddList() {
-    const lastobject = Object.values(lists)
-      .sort((a, b) => a.position - b.position)
-      .at(-1);
-    addList.mutate({
-      name: "enter name here",
-      position: lastobject.position + 1,
-      board: board.id,
-    });
+    const listsArray = Object.values(lists);
+    if (listsArray.length === 0) {
+      addList.mutate({
+        name: "enter name here",
+        position: 1,
+        board: board.id,
+      });
+    } else {
+      const lastObject = listsArray
+        .sort((a, b) => a.position - b.position)
+        .at(-1);
+      addList.mutate({
+        name: "enter name here",
+        position: lastObject.position + 1,
+        board: board.id,
+      });
+    }
   }
 
   function handleAddCard(listId) {
@@ -118,6 +122,14 @@ export function Board({ boardId }) {
 
   function handleDeleteCard(card) {
     deleteCard.mutate(card);
+  }
+
+  function handleChangeCardName(newName, card) {
+    setCards({ ...cards, [card.id]: { ...card, name: newName } });
+  }
+
+  function handleChangeListName(newName, list) {
+    setLists({ ...lists, [list.id]: { ...list, name: newName } });
   }
 
   function handleDeleteList(listId) {
@@ -164,7 +176,9 @@ export function Board({ boardId }) {
               <GhostInput
                 className={"kanban-title"}
                 value={board.name}
-                setValue={setBoard}
+                setValue={(newName) => {
+                  setBoard({ ...board, name: newName });
+                }}
                 onSubmit={(newName) => updateBoard.mutate({ name: newName })}
               />
             </div>
@@ -177,7 +191,9 @@ export function Board({ boardId }) {
                     id="background-color"
                     name="background-color"
                     value={board.backgroundColor}
-                    onChange={(e) => setBackgroundColor(e.target.value)}
+                    onChange={(e) =>
+                      setBoard({ ...board, backgroundColor: e.target.value })
+                    }
                   />
                 </div>
                 <div className="kanban-board-header-option">
@@ -186,7 +202,9 @@ export function Board({ boardId }) {
                     id="background-image-url"
                     name="background-image-url"
                     value={board.backgroundImageUrl}
-                    onChange={(e) => setBackgroundImageUrl(e.target.value)}
+                    onChange={(e) =>
+                      setBoard({ ...board, backgroundImageUrl: e.target.value })
+                    }
                     placeholder="put image link here"
                   />
                 </div>
@@ -202,6 +220,7 @@ export function Board({ boardId }) {
                   <List
                     list={list}
                     key={list.id}
+                    onListNameChange={handleChangeListName}
                     onAddCard={handleAddCard}
                     onDeleteCard={handleDeleteCard}
                     onDeleteList={handleDeleteList}
@@ -215,6 +234,7 @@ export function Board({ boardId }) {
                             card={card}
                             key={card.id}
                             index={index}
+                            onCardNameChange={handleChangeCardName}
                             onDeleteCard={handleDeleteCard}
                           />
                         ))}

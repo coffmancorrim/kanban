@@ -50,7 +50,7 @@ export function useAddList({ setLists }) {
     onSuccess: (newList) => {
       setLists((previousLists) => ({
         ...previousLists,
-        [newList.id]: { newList },
+        [newList.id]: newList,
       }));
     },
   });
@@ -84,7 +84,7 @@ export function useAddCard({ setCards }) {
   });
 }
 
-export function useDeleteCard({ setBoard }) {
+export function useDeleteCard({ setCards }) {
   return useMutation({
     mutationFn: async (card) => {
       const response = await fetch(BASE_URL + `card/${card.id}/`, {
@@ -103,22 +103,15 @@ export function useDeleteCard({ setBoard }) {
     },
 
     onSuccess: (cardToDelete) => {
-      setBoard((previousBoard) => ({
-        ...previousBoard,
-        lists: previousBoard.lists.map((list) =>
-          list.id == cardToDelete.list
-            ? {
-                ...list,
-                cards: list.cards.filter((card) => card.id !== cardToDelete.id),
-              }
-            : list,
-        ),
-      }));
+      setCards((previousCards) => {
+        const { [cardToDelete.id]: _, ...rest } = previousCards;
+        return rest;
+      });
     },
   });
 }
 
-export function useDeleteList({ setBoard }) {
+export function useDeleteList({ setLists }) {
   return useMutation({
     mutationFn: async (listId) => {
       const response = await fetch(BASE_URL + `list/${listId}/`, {
@@ -137,10 +130,10 @@ export function useDeleteList({ setBoard }) {
     },
 
     onSuccess: (listId) => {
-      setBoard((previousBoard) => ({
-        ...previousBoard,
-        lists: previousBoard.lists.filter((list) => list.id != listId),
-      }));
+      setLists((previousLists) => {
+        const { [listId]: _, ...rest } = previousLists;
+        return rest;
+      });
     },
   });
 }

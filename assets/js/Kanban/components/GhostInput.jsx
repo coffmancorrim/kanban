@@ -6,10 +6,8 @@ export function GhostInput({ className = "", value, setValue, onSubmit }) {
   const blurInputRef = useRef(null);
 
   function handleInputSubmit() {
-    if (input !== input2) {
-      setValue(input);
-      onSubmit(input);
-    }
+    setValue(input);
+    onSubmit(input);
   }
 
   useEffect(() => {

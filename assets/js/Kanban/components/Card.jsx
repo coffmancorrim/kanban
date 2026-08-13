@@ -5,8 +5,9 @@ import "../styles.css";
 import { MutationStatus } from "./MutationStatus.jsx";
 import { noSelfCollision } from "../util/dnd.js";
 import { useUpdateCard } from "../hooks/BoardOperations.js";
+import { GhostInput } from "./GhostInput.jsx";
 
-export function Card({ card, index, onDeleteCard }) {
+export function Card({ card, onCardNameChange, index, onDeleteCard }) {
   const [description, setDescription] = useState(card.description);
   const [imageUrl, setImageUrl] = useState(card.imageUrl);
   const [readOnly, setReadOnly] = useState(true);
@@ -41,11 +42,12 @@ export function Card({ card, index, onDeleteCard }) {
       <h2>
         id: {card.id} pos: {card.position}
       </h2>
-      <input
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        readOnly={readOnly}
+      <GhostInput
+        value={card.description}
+        setValue={(newName) => onCardNameChange(newName, card)}
+        onSubmit={(newName) => updateCard.mutate({ description: newName })}
       />
+
       {!readOnly && (
         <input
           value={imageUrl}
