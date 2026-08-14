@@ -138,10 +138,10 @@ export function useDeleteList({ setLists }) {
   });
 }
 
-export function useUpdateBoard(boardId) {
+export function useUpdateBoard({ setBoard }) {
   return useMutation({
     mutationFn: async (updatedBoard) => {
-      const response = await fetch(BASE_URL + `board/${boardId}/`, {
+      const response = await fetch(BASE_URL + `board/${updatedBoard.id}/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -151,15 +151,20 @@ export function useUpdateBoard(boardId) {
       });
 
       if (!response.ok) throw new Error("Failed to update board");
-      return response.json();
+      return updatedBoard;
     },
+    onSuccess: (updatedBoard) =>
+      setBoard((previousBoard) => ({
+        ...previousBoard,
+        [updatedBoard.id]: updatedBoard,
+      })),
   });
 }
 
-export function useUpdateList(listId) {
+export function useUpdateList({ setLists }) {
   return useMutation({
     mutationFn: async (updatedList) => {
-      const response = await fetch(BASE_URL + `list/${listId}/`, {
+      const response = await fetch(BASE_URL + `list/${updatedList.id}/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -170,8 +175,14 @@ export function useUpdateList(listId) {
       });
 
       if (!response.ok) throw new Error("Failed to update List");
-      return response.json();
+      return updatedList;
     },
+
+    onSuccess: (updatedList) =>
+      setLists((previousLists) => ({
+        ...previousLists,
+        [updatedList.id]: updatedList,
+      })),
   });
 }
 
@@ -202,10 +213,10 @@ export function useUpdateListPosition() {
   });
 }
 
-export function useUpdateCard(cardId) {
+export function useUpdateCard({ setCards }) {
   return useMutation({
     mutationFn: async (updatedCard) => {
-      const response = await fetch(BASE_URL + `card/${cardId}/`, {
+      const response = await fetch(BASE_URL + `card/${updatedCard.id}/`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -215,7 +226,14 @@ export function useUpdateCard(cardId) {
       });
 
       if (!response.ok) throw new Error("unable to update Card");
-      return response.json();
+      return updatedCard;
+    },
+
+    onSuccess: (updatedCard) => {
+      setCards((previousCards) => ({
+        ...previousCards,
+        [updatedCard.id]: updatedCard,
+      }));
     },
   });
 }

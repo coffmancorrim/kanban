@@ -12,10 +12,9 @@ import { GhostInput } from "./GhostInput.jsx";
 export function List({
   list,
   children,
-  onListNameChange,
-  onAddCard,
-  onDeleteCard,
+  onUpdateList,
   onDeleteList,
+  onAddCard,
 }) {
   const [name, setName] = useState(list.name);
   const [position, setPosition] = useState(list.position);
@@ -26,25 +25,11 @@ export function List({
     accept: (source) => typeof source.id === "string",
     collisionDetector: noSelfCollision,
   });
-  const updateList = useUpdateList(list.id);
-
-  function handleSubmit() {
-    if (readOnly === false) {
-      const editedList = {
-        name: name,
-      };
-      if (name !== list.name) {
-        updateList.mutate(editedList);
-      }
-    }
-
-    setReadOnly(!readOnly);
-  }
 
   return (
     <div className="kanban-list" ref={ref}>
       <MutationStatus
-        mutations={[{ mutation: updateList, name: "update list" }]}
+        mutations={[{ mutation: onUpdateList, name: "update list" }]}
       />
       <h2>
         id: {list.id} pos: {list.position}
@@ -52,8 +37,10 @@ export function List({
       <div className="kanban-column-header">
         <GhostInput
           value={list.name}
-          setValue={(newName) => onListNameChange(newName, list)}
-          onSubmit={(newName) => updateList.mutate({ name: newName })}
+          placeholderText="enter name here"
+          onHandleSubmit={(newName) =>
+            onUpdateList.mutate({ ...list, name: newName })
+          }
         />
       </div>
       <div>{children}</div>

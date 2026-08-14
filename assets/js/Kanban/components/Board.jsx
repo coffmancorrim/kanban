@@ -13,7 +13,9 @@ import {
   useDeleteList,
   useUpdateBoard,
   useUpdateBoardOnCount,
+  useUpdateCard,
   useUpdateCardPosition,
+  useUpdateList,
 } from "../hooks/BoardOperations.js";
 import { useDrag } from "../hooks/useDrag.js";
 import { MutationStatus } from "./MutationStatus.jsx";
@@ -49,13 +51,15 @@ export function Board({ boardId }) {
     lists,
     setLists,
   });
-  const updateBoard = useUpdateBoard(boardId);
+  const updateBoard = useUpdateBoard({ setBoard });
   const updateBoardOnCount = useUpdateBoardOnCount(
     boardId,
     boardData.updatedCount,
   );
   const addList = useAddList({ setLists });
   const addCard = useAddCard({ setCards });
+  const updateCard = useUpdateCard({ setCards });
+  const updateList = useUpdateList({ setLists });
   const deleteCard = useDeleteCard({ setCards });
   const deleteList = useDeleteList({ setLists });
 
@@ -68,6 +72,7 @@ export function Board({ boardId }) {
   function handleSubmit() {
     if (isEditable === false) {
       const editedBoard = {
+        ...board,
         backgroundColor: board.backgroundColor,
         backgroundImageUrl: board.backgroundImageUrl,
       };
@@ -125,10 +130,10 @@ export function Board({ boardId }) {
   }
 
   function handleCardNameChange(newName, card) {
-    setCards({ ...cards, [card.id]: { ...card, name: newName } });
+    updateCard.mutate({ ...card, name: newName });
   }
   function handleCardImageChange(newImageUrl, card) {
-    setCards({ ...cards, [card.id]: { ...card, imageUrl: newImageUrl } });
+    updateCard.mutate({ ...card, imageUrl: newImageUrl });
   }
 
   function handleListNameChange(newName, list) {
@@ -179,10 +184,9 @@ export function Board({ boardId }) {
               <GhostInput
                 className={"kanban-title"}
                 value={board.name}
-                setValue={(newName) => {
-                  setBoard({ ...board, name: newName });
-                }}
-                onSubmit={(newName) => updateBoard.mutate({ name: newName })}
+                onHandleSubmit={(newName) =>
+                  updateBoard.mutate({ ...board, name: newName })
+                }
               />
             </div>
             {!isEditable && (
@@ -223,7 +227,7 @@ export function Board({ boardId }) {
                   <List
                     list={list}
                     key={list.id}
-                    onListNameChange={handleListNameChange}
+                    onUpdateList={updateList}
                     onAddCard={handleAddCard}
                     onDeleteCard={handleDeleteCard}
                     onDeleteList={handleDeleteList}
@@ -237,8 +241,7 @@ export function Board({ boardId }) {
                             card={card}
                             key={card.id}
                             index={index}
-                            onCardNameChange={handleCardNameChange}
-                            onCardImageChange={handleCardImageChange}
+                            onUpdateCard={updateCard}
                             onDeleteCard={handleDeleteCard}
                           />
                         ))}

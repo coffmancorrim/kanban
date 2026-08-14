@@ -7,20 +7,13 @@ import { noSelfCollision } from "../util/dnd.js";
 import { useUpdateCard } from "../hooks/BoardOperations.js";
 import { GhostInput } from "./GhostInput.jsx";
 
-export function Card({
-  card,
-  onCardNameChange,
-  onCardImageChange,
-  index,
-  onDeleteCard,
-}) {
+export function Card({ card, onUpdateCard, index, onDeleteCard }) {
   const { ref, isDragSource } = useSortable({
     id: card.id,
     index: index,
 
     collisionDetector: noSelfCollision,
   });
-  const updateCard = useUpdateCard(card.id);
 
   return (
     <div
@@ -29,7 +22,7 @@ export function Card({
       style={card.imageUrl != "" ? { padding: 0 } : {}}
     >
       <MutationStatus
-        mutations={[{ mutation: updateCard, name: "update card" }]}
+        mutations={[{ mutation: onUpdateCard, name: "update card" }]}
       />
       {!card.imageUrl ? (
         <>
@@ -38,14 +31,16 @@ export function Card({
           </h2>
           <GhostInput
             value={card.description}
-            setValue={(newName) => onCardNameChange(newName, card)}
-            onSubmit={(newName) => updateCard.mutate({ description: newName })}
+            placeholderText="enter description"
+            onHandleSubmit={(newDescription) =>
+              onUpdateCard.mutate({ ...card, description: newDescription })
+            }
           />
           <GhostInput
             value={card.imageUrl}
-            setValue={(newImageUrl) => onCardImageChange(newImageUrl, card)}
-            onSubmit={(newImageUrl) =>
-              updateCard.mutate({ imageUrl: newImageUrl })
+            placeholderText="place image url here"
+            onHandleSubmit={(newImageUrl) =>
+              onUpdateCard.mutate({ ...card, imageUrl: newImageUrl })
             }
           />
         </>
@@ -55,7 +50,11 @@ export function Card({
 
       <div className="kanban-card-buttons">
         {card.imageUrl && (
-          <button onClick={() => onCardImageChange("", card)}>🅧</button>
+          <button
+            onClick={() => onUpdateCard.mutate({ ...card, imageUrl: "" })}
+          >
+            🅧
+          </button>
         )}
         <button onClick={(e) => onDeleteCard(card)}>❌</button>
       </div>

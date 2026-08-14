@@ -1,14 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
-export function GhostInput({ className = "", value, setValue, onSubmit }) {
+export function GhostInput({
+  className = "",
+  value,
+  onHandleSubmit,
+  placeholderText = "",
+}) {
   const [input, setInput] = useState(value);
-
   const blurInputRef = useRef(null);
-
-  function handleInputSubmit() {
-    setValue(input);
-    onSubmit(input);
-  }
 
   useEffect(() => {
     setInput(value);
@@ -21,11 +20,11 @@ export function GhostInput({ className = "", value, setValue, onSubmit }) {
       ref={blurInputRef}
       value={input}
       onChange={(e) => setInput(e.target.value)}
-      onBlur={() => handleInputSubmit()}
+      placeholder={placeholderText}
+      onBlur={() => onHandleSubmit(input)}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
           blurInputRef.current.blur();
-          handleInputSubmit();
         }
       }}
     />
