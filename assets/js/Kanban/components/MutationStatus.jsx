@@ -5,25 +5,15 @@ export function MutationStatus({ mutations }) {
     if (!mutation.isPaused && !mutation.isError) return null;
 
     return createPortal(
-      <div
-        style={{
-          position: "fixed",
-          bottom: 20,
-          right: 20,
-          zIndex: 9999,
-        }}
-      >
+      <div className="mutation-status">
+        <span>❗️</span>
         {mutation.isPaused && (
-          <h1>
+          <p>
             Unable to {name}. Network connection lost. The request will be
             retried when the connection is restored.
-          </h1>
+          </p>
         )}
-        {mutation.isError && (
-          <h1>
-            Unable to {name}: {mutation.error.message}
-          </h1>
-        )}
+        {mutation.isError && <p>{mutation.error.message}</p>}
       </div>,
       document.body,
       name,

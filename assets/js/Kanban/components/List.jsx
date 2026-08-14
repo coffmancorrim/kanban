@@ -16,10 +16,6 @@ export function List({
   onDeleteList,
   onAddCard,
 }) {
-  const [name, setName] = useState(list.name);
-  const [position, setPosition] = useState(list.position);
-  const [readOnly, setReadOnly] = useState(true);
-
   const { ref } = useSortable({
     id: String(list.id),
     accept: (source) => typeof source.id === "string",
@@ -28,13 +24,7 @@ export function List({
 
   return (
     <div className="kanban-list" ref={ref}>
-      <MutationStatus
-        mutations={[{ mutation: onUpdateList, name: "update list" }]}
-      />
-      <h2>
-        id: {list.id} pos: {list.position}
-      </h2>
-      <div className="kanban-column-header">
+      <div className="kanban-list-header">
         <GhostInput
           value={list.name}
           placeholderText="enter name here"
@@ -44,7 +34,7 @@ export function List({
         />
       </div>
       <div>{children}</div>
-      <div className="kanban-column-footer">
+      <div className="kanban-list-footer">
         <button onClick={() => onAddCard(list.id)}>add card</button>
         <button onClick={() => onDeleteList(list.id)}>delete list</button>
       </div>

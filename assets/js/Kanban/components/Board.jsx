@@ -165,6 +165,8 @@ export function Board({ boardId }) {
           mutations={[
             { mutation: addList, name: "add list" },
             { mutation: addCard, name: "add card" },
+            { mutation: updateCard, name: "update card" },
+            { mutation: updateList, name: "update list" },
             { mutation: deleteList, name: "delete list" },
             { mutation: deleteCard, name: "delete card" },
             { mutation: updateBoard, name: "update board" },
@@ -236,11 +238,10 @@ export function Board({ boardId }) {
                       Object.values(cards)
                         .filter((card) => card.list === list.id)
                         .sort((a, b) => a.position - b.position)
-                        .map((card, index) => (
+                        .map((card) => (
                           <Card
                             card={card}
                             key={card.id}
-                            index={index}
                             onUpdateCard={updateCard}
                             onDeleteCard={handleDeleteCard}
                           />

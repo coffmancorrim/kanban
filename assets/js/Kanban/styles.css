@@ -163,11 +163,11 @@ a {
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  max-height: calc(100vh - 80px); /* ← 80px accounts for header height */
+  max-height: calc(100vh - 80px);
   overflow-y: auto;
 }
 
-.kanban-column-header {
+.kanban-list-header {
   padding-top: 8px;
   position: sticky;
   top: 0;
@@ -179,7 +179,7 @@ a {
   padding-bottom: 8px;
 }
 
-.kanban-column-footer {
+.kanban-list-footer {
   padding-bottom: 8px;
   position: sticky;
   bottom: 0;
@@ -211,9 +211,23 @@ a {
   width: 100%;
 }
 
-.kanban-card-buttons {
+.kanban-card-footer {
   display: flex;
   justify-content: right;
   margin-top: 4px;
   flex-basis: 100%;
+}
+
+.mutation-status {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  background-color: #ffffff;
+  padding: 0 16px;
+  border-radius: 4px;
+  max-width: 400px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
