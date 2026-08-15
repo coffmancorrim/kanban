@@ -68,7 +68,6 @@ export function applyListDrag(lists, sourceId, targetId, isLeft) {
     }
   }
 
-  console.log(updatedList);
   const newLists = { ...lists, [sourceList.id]: updatedList };
 
   return { updatedList, newLists };
@@ -79,17 +78,10 @@ export function applyDrag(cards, sourceId, targetId, isAbove) {
 
   const sourceCard = cards[sourceId];
 
-  console.log("cards:", cards);
-  console.log("sourceId:", sourceId);
-  console.log("targetId:", targetId);
-  console.log("isAbove:", isAbove);
-  console.log("sourceCard:", sourceCard);
-
   // Get the drag target and its location.
   // Determine whether the drag target is a list or a card.
   let updatedCard = null;
   if (typeof targetId === "string") {
-    console.log("is a list:");
     //If the dragged location is a list
 
     let isListEmpty = true;
@@ -136,7 +128,6 @@ export function applyDrag(cards, sourceId, targetId, isAbove) {
 
   //if the dragged location is another card
   const targetCard = cards[targetId];
-  console.log("is a card:");
 
   let lowestPositionCard = { position: 99999999 };
   let highestPositionCard = { position: -99999999 };

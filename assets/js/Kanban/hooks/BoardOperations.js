@@ -189,8 +189,6 @@ export function useUpdateList({ setLists }) {
 export function useUpdateListPosition() {
   return useMutation({
     mutationFn: async ({ listId, listPosition }) => {
-      console.log("Updating:", listId, listPosition);
-
       const response = await fetch(BASE_URL + `list/${listId}/`, {
         method: "PATCH",
         headers: {
@@ -207,7 +205,6 @@ export function useUpdateListPosition() {
         throw new Error("Failed to update list position");
       }
 
-      console.log("Update successful");
       return response.json();
     },
   });
@@ -241,8 +238,6 @@ export function useUpdateCard({ setCards }) {
 export function useUpdateCardPosition() {
   return useMutation({
     mutationFn: async ({ cardId, cardPosition, cardList }) => {
-      console.log("Updating:", cardId, cardPosition);
-
       const response = await fetch(BASE_URL + `card/${cardId}/`, {
         method: "PATCH",
         headers: {
@@ -256,11 +251,9 @@ export function useUpdateCardPosition() {
       });
 
       if (!response.ok) {
-        console.error("Update failed:", response.status);
         throw new Error("Failed to update card position");
       }
 
-      console.log("Update successful");
       return response.json();
     },
   });

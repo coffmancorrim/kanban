@@ -119,8 +119,7 @@ export function useDrag({ cards, setCards, lists, setLists }) {
       targetId,
       isLeft,
     );
-    console.log("updatedList", updatedList);
-    console.log("NEW LISTS", newLists);
+
     setLists(newLists);
 
     updateListPosition.mutate({
