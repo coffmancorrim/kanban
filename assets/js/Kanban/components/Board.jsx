@@ -1,6 +1,6 @@
 import { DragDropProvider } from "@dnd-kit/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import "../styles.css";
 import { BASE_URL, getCookie } from "../config.js";
 import { Link } from "@tanstack/react-router";
@@ -22,6 +22,7 @@ import { MutationStatus } from "./MutationStatus.jsx";
 import { LoadingGrid } from "./LoadingGrid.jsx";
 import { GhostInput } from "./GhostInput.jsx";
 import { Card } from "./Card.jsx";
+import { getBoardIds } from "../util/boardUtils.js";
 
 async function fetchBoard(boardId) {
   const response = await fetch(BASE_URL + `board/${boardId}/`);
@@ -31,7 +32,7 @@ async function fetchBoard(boardId) {
 
 export function Board({ boardId }) {
   const {
-    data: boardData = { lists: [] },
+    data: boardData = {},
     isLoading,
     error,
   } = useQuery({
@@ -39,11 +40,14 @@ export function Board({ boardId }) {
     queryFn: () => fetchBoard(boardId),
   });
 
-  const [board, setBoard] = useState({ lists: [] });
+  const [board, setBoard] = useState({});
   const [lists, setLists] = useState({});
   const [cards, setCards] = useState({});
-
   const [isEditable, setIsEditable] = useState(true);
+  const { firstListId, lastListId, firstCardIds, lastCardIds } = useMemo(
+    () => getBoardIds(lists, cards),
+    [lists, cards],
+  );
 
   const { onDragStart, onDragOverHelper, onDragEndHelper } = useDrag({
     cards,
@@ -82,66 +86,57 @@ export function Board({ boardId }) {
     setIsEditable(!isEditable);
   }
 
+  function handleUpdateDictionaryRef(
+    valueId,
+    keyId,
+    index,
+    array,
+    firstRef,
+    lastRef,
+  ) {
+    if (index === 0) {
+      if (firstRef.current === null) {
+        firstRef.current = {};
+      }
+      firstRef.current[keyId] = valueId;
+    } else if (index === array.length - 1) {
+      if (lastRef.current === null) {
+        lastRef.current = {};
+      }
+      lastRef.current[keyId] = valueId;
+    }
+  }
+
   function handleAddList() {
-    const listsArray = Object.values(lists);
-    if (listsArray.length === 0) {
+    if (firstListId == null) {
       addList.mutate({
         name: "enter name here",
         position: 1,
         board: board.id,
       });
     } else {
-      const lastObject = listsArray
-        .sort((a, b) => a.position - b.position)
-        .at(-1);
       addList.mutate({
         name: "enter name here",
-        position: lastObject.position + 1,
+        position: lists[lastListId].position + 1,
         board: board.id,
       });
     }
   }
 
   function handleAddCard(listId) {
-    const cardsList = Object.values(cards).filter(
-      (card) => card.list === listId,
-    );
-    if (cardsList.length === 0) {
+    if (firstCardIds[listId] == null) {
       addCard.mutate({
         description: "enter name here",
         position: 1,
         list: listId,
       });
     } else {
-      const lastobject = cardsList
-        .sort((a, b) => a.position - b.position)
-        .at(-1);
-
       addCard.mutate({
         description: "enter name here",
-        position: lastobject.position + 1,
+        position: cards[lastCardIds[listId]].position + 1,
         list: listId,
       });
     }
-  }
-
-  function handleDeleteCard(card) {
-    deleteCard.mutate(card);
-  }
-
-  function handleCardNameChange(newName, card) {
-    updateCard.mutate({ ...card, name: newName });
-  }
-  function handleCardImageChange(newImageUrl, card) {
-    updateCard.mutate({ ...card, imageUrl: newImageUrl });
-  }
-
-  function handleListNameChange(newName, list) {
-    setLists({ ...lists, [list.id]: { ...list, name: newName } });
-  }
-
-  function handleDeleteList(listId) {
-    deleteList.mutate(listId);
   }
 
   if (error) return <p>Unable to load board: {error.message}</p>;
@@ -225,30 +220,28 @@ export function Board({ boardId }) {
             {lists &&
               Object.values(lists)
                 .sort((a, b) => a.position - b.position)
-                .map((list) => (
+                .map((list, listIndex, lists) => (
                   <List
                     list={list}
                     key={list.id}
                     onUpdateList={updateList}
                     onAddCard={handleAddCard}
-                    onDeleteCard={handleDeleteCard}
-                    onDeleteList={handleDeleteList}
+                    onDeleteList={deleteList}
                   >
                     {cards &&
                       Object.values(cards)
                         .filter((card) => card.list === list.id)
                         .sort((a, b) => a.position - b.position)
-                        .map((card) => (
+                        .map((card, cardIndex, cards) => (
                           <Card
-                            card={card}
                             key={card.id}
+                            card={card}
                             onUpdateCard={updateCard}
-                            onDeleteCard={handleDeleteCard}
+                            onDeleteCard={deleteCard}
                           />
                         ))}
                   </List>
                 ))}
-
             <button onClick={handleAddList}>add list</button>
           </div>
         </DragDropProvider>

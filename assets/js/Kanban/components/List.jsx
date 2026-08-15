@@ -36,7 +36,9 @@ export function List({
       <div>{children}</div>
       <div className="kanban-list-footer">
         <button onClick={() => onAddCard(list.id)}>add card</button>
-        <button onClick={() => onDeleteList(list.id)}>delete list</button>
+        <button onClick={() => onDeleteList.mutate(list.id)}>
+          delete list
+        </button>
       </div>
     </div>
   );

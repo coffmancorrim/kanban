@@ -44,11 +44,12 @@ export default function Boards() {
   return (
     <div className="boards-body">
       <MutationStatus
-        mutations={[{ mutation: createBoard, name: "create board" }]}
+        mutations={[
+          { mutation: createBoard, name: "create board" },
+          { mutation: deleteBoard, name: "delete board" },
+        ]}
       />
-      <MutationStatus
-        mutations={[{ mutation: deleteBoard, name: "delete board" }]}
-      />
+
       <div className="boards-header">
         <h1>boards</h1>
         <button

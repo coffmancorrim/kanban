@@ -48,7 +48,7 @@ export function Card({ card, onUpdateCard, onDeleteCard }) {
             🅧
           </button>
         )}
-        <button onClick={(e) => onDeleteCard(card)}>❌</button>
+        <button onClick={(e) => onDeleteCard.mutate(card)}>❌</button>
       </div>
     </div>
   );
