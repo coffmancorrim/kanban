@@ -9,6 +9,10 @@ export function GhostInput({
   const [input, setInput] = useState(value);
   const blurInputRef = useRef(null);
 
+  useEffect(() => {
+    setInput(value);
+  }, [value]);
+
   return (
     <input
       className={className}

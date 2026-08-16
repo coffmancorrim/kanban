@@ -124,7 +124,7 @@ export function Board({ boardId }) {
   }
 
   function handleAddCard(listId) {
-    if (firstCardIds[listId] == null) {
+    if (firstCardIds == null || firstCardIds[listId] == null) {
       addCard.mutate({
         description: "enter name here",
         position: 1,

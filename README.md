@@ -1,9 +1,47 @@
-# Saved For Later
+# Kanban Board
 
-Bookmarking app built with Django, Django REST Framework, React, built with Vite and fetching handled by Tanstack Query.
+A full-stack Kanban board built with Django, React and dnd kit.
 
-Django backend exposes a REST API that the React frontend consumes via TanStack Query. The Chrome extension hits the same API endpoints to save media items.
+- Create, edit, manage multiple boards, each with a customizable background (color or image)
+- Create, edit, drag-and-drop mutiple lists and cards
+- display images in each card
 
-Intended to be used with [Saved For Later Chrome Extension](https://github.com/coffmancorrim/sfl-extension) extnesion. You can click the extension icon and it will attempt to save that page to the Django backend. Sign up and add API keys for IGDB and OMDB api for the best results (gets image banner and other data).
+![Board Demo](assets/board.gif)
 
-Primarily built for saving Media but can be used for general bookmarking.
+![Drag and Drop Demo](assets/drag%20and%20drop%20final.gif)
+
+## Tech Stack
+
+**Backend**
+
+- Django 6.0
+- Django REST Framework
+- SQLite
+- django-vite
+- django-environ
+
+**Frontend**
+
+- React
+- Vite
+- TanStack Router
+- TanStack Query
+- dnd kit
+
+## Gallery
+
+### Boards
+
+![Boards Demo](assets/boards%20final.gif)
+
+### Board
+
+![Board Demo](assets/board.gif)
+
+### Drag and Drop
+
+![Drag and Drop Demo](assets/drag%20and%20drop%20final.gif)
+
+### Lists and Cards
+
+![Lists and Cards Demo](assets/lists%20and%20cards.gif)
