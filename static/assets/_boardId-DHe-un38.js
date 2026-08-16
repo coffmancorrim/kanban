@@ -1,0 +1,1 @@
+import{h as e,n as t,t as n,v as r}from"../js/main-bundle.js";import{n as i,t as a}from"./Board-qLw3R6Oa.js";function o(){let{boardId:e}=n.useParams();return(0,s.jsx)(a,{boardId:e})}var s;r((()=>{i(),t(),s=e()}))();export{o as component};

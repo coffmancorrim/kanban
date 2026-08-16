@@ -9,3 +9,4 @@ db.sqlite3
 .DS_Store
 assets/js/Kanban/example.tsx
 assets/js/Kanban/test.jsx
+staticfiles/
