@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 export function GhostInput({
   className = "",
   value,
-  onHandleSubmit,
+  onSubmit,
   placeholderText = "",
 }) {
   const [input, setInput] = useState(value);
@@ -21,7 +21,7 @@ export function GhostInput({
       value={input}
       onChange={(e) => setInput(e.target.value)}
       placeholder={placeholderText}
-      onBlur={() => onHandleSubmit(input)}
+      onBlur={() => onSubmit(input)}
       onKeyDown={(e) => {
         if (e.key === "Enter") {
           blurInputRef.current.blur();

@@ -1,10 +1,7 @@
-import { useSortable, isSortable } from "@dnd-kit/react/sortable";
-import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useSortable } from "@dnd-kit/react/sortable";
 import "../styles.css";
 import { MutationStatus } from "./MutationStatus.jsx";
 import { noSelfCollision } from "../util/dnd.js";
-import { useUpdateCard } from "../hooks/BoardOperations.js";
 import { GhostInput } from "./GhostInput.jsx";
 
 export function Card({ card, onUpdateCard, onDeleteCard }) {
@@ -24,20 +21,24 @@ export function Card({ card, onUpdateCard, onDeleteCard }) {
           <GhostInput
             value={card.description}
             placeholderText="enter description"
-            onHandleSubmit={(newDescription) =>
+            onSubmit={(newDescription) =>
               onUpdateCard.mutate({ ...card, description: newDescription })
             }
           />
           <GhostInput
             value={card.imageUrl}
             placeholderText="place image url here"
-            onHandleSubmit={(newImageUrl) =>
+            onSubmit={(newImageUrl) =>
               onUpdateCard.mutate({ ...card, imageUrl: newImageUrl })
             }
           />
         </>
       ) : (
-        <img className="kanban-card-image" src={card.imageUrl} />
+        <img
+          className="kanban-card-image"
+          src={card.imageUrl}
+          alt={card.description || "card image"}
+        />
       )}
 
       <div className="kanban-card-footer">
@@ -48,7 +49,7 @@ export function Card({ card, onUpdateCard, onDeleteCard }) {
             🅧
           </button>
         )}
-        <button onClick={(e) => onDeleteCard.mutate(card)}>❌</button>
+        <button onClick={() => onDeleteCard.mutate(card)}>❌</button>
       </div>
     </div>
   );

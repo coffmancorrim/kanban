@@ -1,11 +1,7 @@
-import { useDroppable } from "@dnd-kit/react";
-import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
 import "../styles.css";
 import { Card } from "./Card.jsx";
 import { MutationStatus } from "./MutationStatus.jsx";
 import { noSelfCollision } from "../util/dnd.js";
-import { useUpdateList } from "../hooks/BoardOperations.js";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { GhostInput } from "./GhostInput.jsx";
 
@@ -28,7 +24,7 @@ export function List({
         <GhostInput
           value={list.name}
           placeholderText="enter name here"
-          onHandleSubmit={(newName) =>
+          onSubmit={(newName) =>
             onUpdateList.mutate({ ...list, name: newName })
           }
         />

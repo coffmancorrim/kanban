@@ -1,11 +1,4 @@
-import {
-  QueryClient,
-  queryOptions,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import "../styles.css";
 import { Board } from "./Board.jsx";
 import { Link } from "@tanstack/react-router";
@@ -14,8 +7,8 @@ import { MutationStatus } from "./MutationStatus.jsx";
 import { LoadingGrid } from "./LoadingGrid.jsx";
 import { useCreateBoard, useDeleteBoard } from "../hooks/BoardsOperations.js";
 
-async function fetchBoards(query) {
-  const response = await fetch(BASE_URL + `boards/`);
+async function fetchBoards() {
+  const response = await fetch(BASE_URL + "boards/");
   if (!response.ok) throw new Error("Failed to fetch boards");
   return await response.json();
 }
@@ -38,7 +31,7 @@ export default function Boards() {
   }
 
   if (error) {
-    return <p>Error loading boards</p>;
+    return <p>Unable to load boards. Please try again.</p>;
   }
 
   return (
@@ -53,7 +46,7 @@ export default function Boards() {
       <div className="boards-header">
         <h1>boards</h1>
         <button
-          onClick={(e) =>
+          onClick={() =>
             createBoard.mutate({
               name: "New Board",
             })
@@ -64,21 +57,19 @@ export default function Boards() {
       </div>
       <div className="boards-list">
         {boards.map((board) => (
-          <div className="boards-item">
+          <div className="boards-item" key={board.id}>
             <Link
               to="/kanban/$boardId"
               params={{
                 boardId: board.id,
               }}
-
               className="boards-item-link"
-              key={board.id}
             >
               {board.name}
             </Link>
             <button
               className="boards-item-button"
-              onClick={(e) => deleteBoard.mutate(board.id)}
+              onClick={() => deleteBoard.mutate(board.id)}
             >
               ❌
             </button>

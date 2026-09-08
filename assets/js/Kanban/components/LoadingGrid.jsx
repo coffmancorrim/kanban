@@ -1,18 +1,10 @@
 import { Grid } from "ldrs/react";
 import "ldrs/react/Grid.css";
+import "./loading-grid.css";
 
 export function LoadingGrid() {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        width: "100vw",
-        flexDirection: "column",
-      }}
-    >
+    <div className="loading-grid">
       <h2>Loading...</h2>
       <Grid size="150" />
     </div>

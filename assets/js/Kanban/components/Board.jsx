@@ -1,11 +1,10 @@
 import { DragDropProvider } from "@dnd-kit/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import "../styles.css";
-import { BASE_URL, getCookie } from "../config.js";
+import { BASE_URL } from "../config.js";
 import { Link } from "@tanstack/react-router";
 import { List } from "./List.jsx";
-import { applyDrag } from "../util/dnd.js";
 import {
   useAddCard,
   useAddList,
@@ -14,7 +13,6 @@ import {
   useUpdateBoard,
   useUpdateBoardOnCount,
   useUpdateCard,
-  useUpdateCardPosition,
   useUpdateList,
 } from "../hooks/BoardOperations.js";
 import { useDrag } from "../hooks/useDrag.js";
@@ -43,7 +41,7 @@ export function Board({ boardId }) {
   const [board, setBoard] = useState({});
   const [lists, setLists] = useState({});
   const [cards, setCards] = useState({});
-  const [isEditable, setIsEditable] = useState(true);
+  const [isEditable, setIsEditable] = useState(false);
   const { firstListId, lastListId, firstCardIds, lastCardIds } = useMemo(
     () => getBoardIds(lists, cards),
     [lists, cards],
@@ -55,7 +53,7 @@ export function Board({ boardId }) {
     lists,
     setLists,
   });
-  const updateBoard = useUpdateBoard({ setBoard });
+  const updateBoard = useUpdateBoard({ boardId: board.id, setBoard });
   const updateBoardOnCount = useUpdateBoardOnCount(
     boardId,
     boardData.updatedCount,
@@ -74,36 +72,13 @@ export function Board({ boardId }) {
   }, [boardData]);
 
   function handleSubmit() {
+    setIsEditable(!isEditable);
+
     if (isEditable === false) {
-      const editedBoard = {
-        ...board,
+      updateBoard.mutate({
         backgroundColor: board.backgroundColor,
         backgroundImageUrl: board.backgroundImageUrl,
-      };
-      updateBoard.mutate(editedBoard);
-    }
-
-    setIsEditable(!isEditable);
-  }
-
-  function handleUpdateDictionaryRef(
-    valueId,
-    keyId,
-    index,
-    array,
-    firstRef,
-    lastRef,
-  ) {
-    if (index === 0) {
-      if (firstRef.current === null) {
-        firstRef.current = {};
-      }
-      firstRef.current[keyId] = valueId;
-    } else if (index === array.length - 1) {
-      if (lastRef.current === null) {
-        lastRef.current = {};
-      }
-      lastRef.current[keyId] = valueId;
+      });
     }
   }
 
@@ -153,7 +128,9 @@ export function Board({ boardId }) {
         className="kanban-body"
         style={{
           backgroundColor: board.backgroundColor,
-          backgroundImage: `url(${board.backgroundImageUrl})`,
+          backgroundImage: board.backgroundImageUrl
+            ? `url(${board.backgroundImageUrl})`
+            : undefined,
         }}
       >
         <MutationStatus
@@ -174,19 +151,19 @@ export function Board({ boardId }) {
           onDragEnd={onDragEndHelper}
         >
           <div className="kanban-board-header">
-            <div className="kanban-board-header-main ">
+            <div className="kanban-board-header-main">
               <Link className="back-link" to="/">
                 🔙
               </Link>
               <GhostInput
                 className={"kanban-title"}
                 value={board.name}
-                onHandleSubmit={(newName) =>
+                onSubmit={(newName) =>
                   updateBoard.mutate({ ...board, name: newName })
                 }
               />
             </div>
-            {!isEditable && (
+            {isEditable && (
               <div className="kanban-board-header-options">
                 <div className="kanban-board-header-option">
                   <label htmlFor="background-color">Background Color</label>
@@ -194,7 +171,7 @@ export function Board({ boardId }) {
                     type="color"
                     id="background-color"
                     name="background-color"
-                    value={board.backgroundColor}
+                    value={board.backgroundColor || ""}
                     onChange={(e) =>
                       setBoard({ ...board, backgroundColor: e.target.value })
                     }
@@ -205,7 +182,7 @@ export function Board({ boardId }) {
                   <input
                     id="background-image-url"
                     name="background-image-url"
-                    value={board.backgroundImageUrl}
+                    value={board.backgroundImageUrl || ""}
                     onChange={(e) =>
                       setBoard({ ...board, backgroundImageUrl: e.target.value })
                     }
@@ -220,7 +197,7 @@ export function Board({ boardId }) {
             {lists &&
               Object.values(lists)
                 .sort((a, b) => a.position - b.position)
-                .map((list, listIndex, lists) => (
+                .map((list) => (
                   <List
                     list={list}
                     key={list.id}
@@ -232,7 +209,7 @@ export function Board({ boardId }) {
                       Object.values(cards)
                         .filter((card) => card.list === list.id)
                         .sort((a, b) => a.position - b.position)
-                        .map((card, cardIndex, cards) => (
+                        .map((card) => (
                           <Card
                             key={card.id}
                             card={card}
