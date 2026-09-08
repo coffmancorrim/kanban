@@ -53,7 +53,7 @@ export function Board({ boardId }) {
     lists,
     setLists,
   });
-  const updateBoard = useUpdateBoard({ boardId: board.id, setBoard });
+  const updateBoard = useUpdateBoard({ boardId, setBoard });
   const updateBoardOnCount = useUpdateBoardOnCount(
     boardId,
     boardData.updatedCount,
@@ -74,7 +74,7 @@ export function Board({ boardId }) {
   function handleSubmit() {
     setIsEditable(!isEditable);
 
-    if (isEditable === false) {
+    if (!isEditable === false) {
       updateBoard.mutate({
         backgroundColor: board.backgroundColor,
         backgroundImageUrl: board.backgroundImageUrl,

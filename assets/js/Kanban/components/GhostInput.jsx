@@ -18,7 +18,7 @@ export function GhostInput({
       className={className}
       type="text"
       ref={blurInputRef}
-      value={input}
+      value={input ?? ""}
       onChange={(e) => setInput(e.target.value)}
       placeholder={placeholderText}
       onBlur={() => onSubmit(input)}
