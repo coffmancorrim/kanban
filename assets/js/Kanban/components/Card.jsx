@@ -7,6 +7,7 @@ import { GhostInput } from "./GhostInput.jsx";
 export function Card({ card, onUpdateCard, onDeleteCard }) {
   const { ref, isDragSource } = useSortable({
     id: card.id,
+    accept: (source) => typeof source.id !== "string",
     collisionDetector: noSelfCollision,
   });
 

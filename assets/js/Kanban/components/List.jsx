@@ -14,7 +14,8 @@ export function List({
 }) {
   const { ref } = useSortable({
     id: String(list.id),
-    accept: (source) => typeof source.id === "string",
+    accept: (source) =>
+      typeof source.id === "string" || typeof source.id === "number",
     collisionDetector: noSelfCollision,
   });
 

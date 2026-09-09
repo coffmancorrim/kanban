@@ -13,7 +13,6 @@ export function useDrag({ cards, setCards, lists, setLists }) {
 
   function onDragStart(event) {
     const sourceId = event.operation.source?.id;
-    const targetId = event.operation.target?.id ?? null;
     if (typeof sourceId === "string") {
       snapshotRef.current = lists;
     } else {
@@ -90,7 +89,7 @@ export function useDrag({ cards, setCards, lists, setLists }) {
     const sourceId = event.operation.source?.id;
     const targetId = event.operation.target?.id ?? null;
 
-    if (event.canceled || !targetId || sourceId == targetId) {
+    if (event.canceled || !targetId || sourceId === targetId) {
       if (typeof sourceId === "string") {
         setLists(snapshotRef.current);
       } else {
@@ -128,7 +127,11 @@ export function useDrag({ cards, setCards, lists, setLists }) {
     });
 
     snapshotRef.current = null;
-    lastTargetRef.current = null;
+    lastTargetRef.current = {
+      id: null,
+      isAbove: null,
+      isLeft: null,
+    };
   }
 
   function onDragEnd(event, sourceId, targetId) {
@@ -151,7 +154,11 @@ export function useDrag({ cards, setCards, lists, setLists }) {
     });
 
     snapshotRef.current = null;
-    lastTargetRef.current = null;
+    lastTargetRef.current = {
+      id: null,
+      isAbove: null,
+      isLeft: null,
+    };
   }
 
   return { onDragStart, onDragOverHelper, onDragEndHelper };

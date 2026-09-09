@@ -20,15 +20,16 @@ export function applyListDrag(lists, sourceId, targetId, isLeft) {
   const sourceList = lists[sourceId];
   const targetList = lists[targetId];
 
-  let lowestPositionList = { position: 99999999 };
-  let highestPositionList = { position: -99999999 };
-  let maxPositionListLeftOfTarget = { position: -99999999 };
-  let minPositionListRightOfTarget = { position: 99999999 };
+  let lowestPositionList = { position: Infinity };
+  let highestPositionList = { position: -Infinity };
+  let maxPositionListLeftOfTarget = { position: -Infinity };
+  let minPositionListRightOfTarget = { position: Infinity };
 
   for (const list of Object.values(lists)) {
     if (lowestPositionList.position > list.position) {
       lowestPositionList = list;
-    } else if (highestPositionList.position < list.position) {
+    }
+    if (highestPositionList.position < list.position) {
       highestPositionList = list;
     }
 
@@ -85,8 +86,8 @@ export function applyDrag(cards, sourceId, targetId, isAbove) {
     //If the dragged location is a list
 
     let isListEmpty = true;
-    let lowestPositionCard = { position: 99999999 };
-    let highestPositionCard = { position: -99999999 };
+    let lowestPositionCard = { position: Infinity };
+    let highestPositionCard = { position: -Infinity };
 
     for (const card of Object.values(cards)) {
       if (Number(targetId) === card.list) {
@@ -94,7 +95,8 @@ export function applyDrag(cards, sourceId, targetId, isAbove) {
 
         if (lowestPositionCard.position > card.position) {
           lowestPositionCard = card;
-        } else if (highestPositionCard.position < card.position) {
+        }
+        if (highestPositionCard.position < card.position) {
           highestPositionCard = card;
         }
       }
@@ -129,17 +131,18 @@ export function applyDrag(cards, sourceId, targetId, isAbove) {
   //if the dragged location is another card
   const targetCard = cards[targetId];
 
-  let lowestPositionCard = { position: 99999999 };
-  let highestPositionCard = { position: -99999999 };
-  let maxPositionCardAboveOfTarget = { position: -99999999 };
-  let minPositionCardBelowOfTarget = { position: 99999999 };
+  let lowestPositionCard = { position: Infinity };
+  let highestPositionCard = { position: -Infinity };
+  let maxPositionCardAboveOfTarget = { position: -Infinity };
+  let minPositionCardBelowOfTarget = { position: Infinity };
 
   for (const card of Object.values(cards).filter(
     (card) => card.list === targetCard.list,
   )) {
     if (lowestPositionCard.position > card.position) {
       lowestPositionCard = card;
-    } else if (highestPositionCard.position < card.position) {
+    }
+    if (highestPositionCard.position < card.position) {
       highestPositionCard = card;
     }
 
