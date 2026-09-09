@@ -13,6 +13,7 @@ export function useDrag({ cards, setCards, lists, setLists }) {
 
   function onDragStart(event) {
     const sourceId = event.operation.source?.id;
+
     if (typeof sourceId === "string") {
       snapshotRef.current = lists;
     } else {
