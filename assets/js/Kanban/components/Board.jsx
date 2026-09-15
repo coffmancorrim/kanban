@@ -21,27 +21,13 @@ import { LoadingGrid } from "./LoadingGrid.jsx";
 import { GhostInput } from "./GhostInput.jsx";
 import { Card } from "./Card.jsx";
 import { getBoardIds } from "../util/boardUtils.js";
-
-async function fetchBoard(boardId) {
-  const response = await fetch(BASE_URL + `board/${boardId}/`);
-  if (!response.ok) throw new Error("Failed to fetch board");
-  return await response.json();
-}
+import { BoardHeader } from "./BoardHeader.jsx";
+import { useFetchBoardData } from "../hooks/useFetchBoardData.js";
 
 export function Board({ boardId }) {
-  const {
-    data: boardData = {},
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["board", boardId],
-    queryFn: () => fetchBoard(boardId),
-  });
+  const [board, lists, cards, setBoard, setLists, setCards, isLoading, error] =
+    useFetchBoardData(boardId);
 
-  const [board, setBoard] = useState({});
-  const [lists, setLists] = useState({});
-  const [cards, setCards] = useState({});
-  const [isEditable, setIsEditable] = useState(false);
   const { firstListId, lastListId, firstCardIds, lastCardIds } = useMemo(
     () => getBoardIds(lists, cards),
     [lists, cards],
@@ -53,11 +39,9 @@ export function Board({ boardId }) {
     lists,
     setLists,
   });
+
+  const updateBoardOnCount = useUpdateBoardOnCount(boardId, board.updatedCount);
   const updateBoard = useUpdateBoard({ boardId, setBoard });
-  const updateBoardOnCount = useUpdateBoardOnCount(
-    boardId,
-    boardData.updatedCount,
-  );
   const addList = useAddList({ setLists });
   const addCard = useAddCard({ setCards });
   const updateCard = useUpdateCard({ setCards });
@@ -65,21 +49,22 @@ export function Board({ boardId }) {
   const deleteCard = useDeleteCard({ setCards });
   const deleteList = useDeleteList({ setLists });
 
-  useEffect(() => {
-    setBoard(boardData.board);
-    setLists(boardData.lists);
-    setCards(boardData.cards);
-  }, [boardData]);
+  function handleBackgroundSubmit(
+    updatedBackgroundColor,
+    updatedBackgroundImageUrl,
+  ) {
+    updateBoard.mutate({
+      backgroundColor: updatedBackgroundColor,
+      backgroundImageUrl: updatedBackgroundImageUrl,
+    });
+  }
 
-  function handleSubmit() {
-    setIsEditable(!isEditable);
+  function handleChangeBackgroundColor(value) {
+    setBoard({ ...board, backgroundColor: value });
+  }
 
-    if (!isEditable === false) {
-      updateBoard.mutate({
-        backgroundColor: board.backgroundColor,
-        backgroundImageUrl: board.backgroundImageUrl,
-      });
-    }
+  function handleChangeBackgroundImageUrl(value) {
+    setBoard({ ...board, backgroundImageUrl: value });
   }
 
   function handleAddList() {
@@ -150,49 +135,18 @@ export function Board({ boardId }) {
           onDragOver={onDragOverHelper}
           onDragEnd={onDragEndHelper}
         >
-          <div className="kanban-board-header">
-            <div className="kanban-board-header-main">
-              <Link className="back-link" to="/">
-                🔙
-              </Link>
-              <GhostInput
-                className={"kanban-title"}
-                value={board.name}
-                onSubmit={(newName) =>
-                  updateBoard.mutate({ ...board, name: newName })
-                }
-              />
-            </div>
-            {isEditable && (
-              <div className="kanban-board-header-options">
-                <div className="kanban-board-header-option">
-                  <label htmlFor="background-color">Background Color</label>
-                  <input
-                    type="color"
-                    id="background-color"
-                    name="background-color"
-                    value={board.backgroundColor || ""}
-                    onChange={(e) =>
-                      setBoard({ ...board, backgroundColor: e.target.value })
-                    }
-                  />
-                </div>
-                <div className="kanban-board-header-option">
-                  <label htmlFor="background-image-url">Background Image</label>
-                  <input
-                    id="background-image-url"
-                    name="background-image-url"
-                    value={board.backgroundImageUrl || ""}
-                    onChange={(e) =>
-                      setBoard({ ...board, backgroundImageUrl: e.target.value })
-                    }
-                    placeholder="put image link here"
-                  />
-                </div>
-              </div>
-            )}
-            <button onClick={handleSubmit}>edit</button>
-          </div>
+          <BoardHeader
+            name={board.name}
+            backgroundColor={board.backgroundColor}
+            backgroundImageUrl={board.backgroundImageUrl}
+            onChangeBackgroundColor={handleChangeBackgroundColor}
+            onChangeBackgroundImageUrl={handleChangeBackgroundImageUrl}
+            onTitleSubmit={(newName) =>
+              updateBoard.mutate({ ...board, name: newName })
+            }
+            onBackgroundSubmit={handleBackgroundSubmit}
+          />
+
           <div className="kanban-board">
             {lists &&
               Object.values(lists)

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BASE_URL, getCookie } from "../config.js";
+
 export function useCreateBoard() {
   const queryClient = useQueryClient();
 
