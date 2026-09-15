@@ -34,7 +34,7 @@ async function fetchData(
 
   console.log("RETURN RESPONSE:\n", JSON.stringify(data, null, 2));
 
-  return dataco;
+  return data;
 }
 
 export function useUpdateBoardOnCount(boardId, updatedCount) {
