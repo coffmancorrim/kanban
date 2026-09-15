@@ -108,75 +108,71 @@ export function Board({ boardId }) {
     );
 
   return (
-    board && (
-      <div
-        className="kanban-body"
-        style={{
-          backgroundColor: board.backgroundColor,
-          backgroundImage: board.backgroundImageUrl
-            ? `url(${board.backgroundImageUrl})`
-            : undefined,
-        }}
+    <div
+      className="kanban-body"
+      style={{
+        backgroundColor: board.backgroundColor,
+        backgroundImage: board.backgroundImageUrl
+          ? `url(${board.backgroundImageUrl})`
+          : undefined,
+      }}
+    >
+      <MutationStatus
+        mutations={[
+          { mutation: addList, name: "add list" },
+          { mutation: addCard, name: "add card" },
+          { mutation: updateCard, name: "update card" },
+          { mutation: updateList, name: "update list" },
+          { mutation: deleteList, name: "delete list" },
+          { mutation: deleteCard, name: "delete card" },
+          { mutation: updateBoard, name: "update board" },
+        ]}
+      />
+
+      <DragDropProvider
+        onDragStart={onDragStart}
+        onDragOver={onDragOverHelper}
+        onDragEnd={onDragEndHelper}
       >
-        <MutationStatus
-          mutations={[
-            { mutation: addList, name: "add list" },
-            { mutation: addCard, name: "add card" },
-            { mutation: updateCard, name: "update card" },
-            { mutation: updateList, name: "update list" },
-            { mutation: deleteList, name: "delete list" },
-            { mutation: deleteCard, name: "delete card" },
-            { mutation: updateBoard, name: "update board" },
-          ]}
+        <BoardHeader
+          name={board.name}
+          backgroundColor={board.backgroundColor}
+          backgroundImageUrl={board.backgroundImageUrl}
+          onChangeBackgroundColor={handleChangeBackgroundColor}
+          onChangeBackgroundImageUrl={handleChangeBackgroundImageUrl}
+          onTitleSubmit={(newName) =>
+            updateBoard.mutate({ ...board, name: newName })
+          }
+          onBackgroundSubmit={handleBackgroundSubmit}
         />
 
-        <DragDropProvider
-          onDragStart={onDragStart}
-          onDragOver={onDragOverHelper}
-          onDragEnd={onDragEndHelper}
-        >
-          <BoardHeader
-            name={board.name}
-            backgroundColor={board.backgroundColor}
-            backgroundImageUrl={board.backgroundImageUrl}
-            onChangeBackgroundColor={handleChangeBackgroundColor}
-            onChangeBackgroundImageUrl={handleChangeBackgroundImageUrl}
-            onTitleSubmit={(newName) =>
-              updateBoard.mutate({ ...board, name: newName })
-            }
-            onBackgroundSubmit={handleBackgroundSubmit}
-          />
-
-          <div className="kanban-board">
-            {lists &&
-              Object.values(lists)
-                .sort((a, b) => a.position - b.position)
-                .map((list) => (
-                  <List
-                    list={list}
-                    key={list.id}
-                    onUpdateList={updateList}
-                    onAddCard={handleAddCard}
-                    onDeleteList={deleteList}
-                  >
-                    {cards &&
-                      Object.values(cards)
-                        .filter((card) => card.list === list.id)
-                        .sort((a, b) => a.position - b.position)
-                        .map((card) => (
-                          <Card
-                            key={card.id}
-                            card={card}
-                            onUpdateCard={updateCard}
-                            onDeleteCard={deleteCard}
-                          />
-                        ))}
-                  </List>
-                ))}
-            <button onClick={handleAddList}>add list</button>
-          </div>
-        </DragDropProvider>
-      </div>
-    )
+        <div className="kanban-board">
+          {Object.values(lists)
+            .sort((a, b) => a.position - b.position)
+            .map((list) => (
+              <List
+                list={list}
+                key={list.id}
+                onUpdateList={updateList}
+                onAddCard={handleAddCard}
+                onDeleteList={deleteList}
+              >
+                {Object.values(cards)
+                  .filter((card) => card.list === list.id)
+                  .sort((a, b) => a.position - b.position)
+                  .map((card) => (
+                    <Card
+                      key={card.id}
+                      card={card}
+                      onUpdateCard={updateCard}
+                      onDeleteCard={deleteCard}
+                    />
+                  ))}
+              </List>
+            ))}
+          <button onClick={handleAddList}>add list</button>
+        </div>
+      </DragDropProvider>
+    </div>
   );
 }

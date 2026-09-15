@@ -2,20 +2,47 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { BASE_URL, getCookie } from "../config.js";
 import { useEffect } from "react";
 
+async function fetchData(
+  endpoint,
+  action,
+  errorMessage,
+  body = {},
+  returnBody = false,
+) {
+  const options = {
+    method: action,
+    headers: {
+      "Content-Type": "application/json",
+      "X-CSRFToken": getCookie("csrftoken"),
+    },
+  };
+
+  if (body !== undefined) {
+    options.body = JSON.stringify(body);
+  }
+  const response = await fetch(BASE_URL + endpoint, options);
+
+  if (!response.ok) throw new Error(errorMessage);
+
+  if (returnBody) {
+    console.log("RETURN BODY", JSON.stringify(body, null, 2));
+
+    return body;
+  }
+
+  const data = await response.json();
+
+  console.log("RETURN RESPONSE:\n", JSON.stringify(data, null, 2));
+
+  return dataco;
+}
+
 export function useUpdateBoardOnCount(boardId, updatedCount) {
   const queryClient = useQueryClient();
   const updateBoardOnCount = useMutation({
-    mutationFn: async () => {
-      const response = await fetch(BASE_URL + `board/${boardId}/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      });
-      if (!response.ok) throw new Error("board update failed");
-      return response.json();
-    },
+    mutationFn: () =>
+      fetchData(`board/${boardId}/`, "POST", "board update failed"),
+
     onSuccess: (updatedBoard) => {
       queryClient.setQueryData(["board", boardId], updatedBoard);
     },
@@ -28,24 +55,29 @@ export function useUpdateBoardOnCount(boardId, updatedCount) {
   }, [updatedCount]);
 }
 
+export function useUpdateBoard({ boardId, setBoard }) {
+  return useMutation({
+    mutationFn: (updatedBoard) =>
+      fetchData(
+        `board/${boardId}/`,
+        "PATCH",
+        "Failed to update board",
+        updatedBoard,
+        true,
+      ),
+
+    onSuccess: (updatedBoard) =>
+      setBoard((previousBoard) => ({
+        ...previousBoard,
+        ...updatedBoard,
+      })),
+  });
+}
+
 export function useAddList({ setLists }) {
   return useMutation({
-    mutationFn: async (newList) => {
-      const response = await fetch(BASE_URL + "list/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(newList),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create list");
-      }
-
-      return response.json();
-    },
+    mutationFn: (newList) =>
+      fetchData("list/", "POST", "Failed to add list", newList),
 
     onSuccess: (newList) => {
       setLists((previousLists) => ({
@@ -58,20 +90,14 @@ export function useAddList({ setLists }) {
 
 export function useUpdateList({ setLists }) {
   return useMutation({
-    mutationFn: async (updatedList) => {
-      const response = await fetch(BASE_URL + `list/${updatedList.id}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-
-        body: JSON.stringify(updatedList),
-      });
-
-      if (!response.ok) throw new Error("Failed to update List");
-      return updatedList;
-    },
+    mutationFn: (updatedList) =>
+      fetchData(
+        `list/${updatedList.id}/`,
+        "PATCH",
+        "Failed to update List",
+        updatedList,
+        true,
+      ),
 
     onSuccess: (updatedList) =>
       setLists((previousLists) => ({
@@ -83,21 +109,14 @@ export function useUpdateList({ setLists }) {
 
 export function useDeleteList({ setLists }) {
   return useMutation({
-    mutationFn: async (listId) => {
-      const response = await fetch(BASE_URL + `list/${listId}/`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete list: ${response.status}`);
-      }
-
-      return listId;
-    },
+    mutationFn: (listId) =>
+      fetchData(
+        `list/${listId}/`,
+        "DELETE",
+        "Failed to delete list",
+        listId,
+        true,
+      ),
 
     onSuccess: (listId) => {
       setLists((previousLists) => {
@@ -110,46 +129,18 @@ export function useDeleteList({ setLists }) {
 
 export function useUpdateListPosition() {
   return useMutation({
-    mutationFn: async ({ listId, listPosition }) => {
-      const response = await fetch(BASE_URL + `list/${listId}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify({
-          position: listPosition,
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Update failed:", response.status);
-        throw new Error("Failed to update list position");
-      }
-
-      return response.json();
-    },
+    mutationFn: ({ listId, listPosition }) =>
+      fetchData(`list/${listId}/`, "PATCH", "Failed to update list position", {
+        listId,
+        position: listPosition,
+      }),
   });
 }
 
 export function useAddCard({ setCards }) {
   return useMutation({
-    mutationFn: async (newCard) => {
-      const response = await fetch(BASE_URL + `card/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(newCard),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to create list");
-      }
-
-      return response.json();
-    },
+    mutationFn: (newCard) =>
+      fetchData(`card/`, "POST", "Failed to create card", newCard),
 
     onSuccess: (newCard) => {
       setCards((previousCards) => ({
@@ -162,19 +153,13 @@ export function useAddCard({ setCards }) {
 
 export function useUpdateCard({ setCards }) {
   return useMutation({
-    mutationFn: async (updatedCard) => {
-      const response = await fetch(BASE_URL + `card/${updatedCard.id}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(updatedCard),
-      });
-
-      if (!response.ok) throw new Error("unable to update Card");
-      return updatedCard;
-    },
+    mutationFn: (updatedCard) =>
+      fetchData(
+        `card/${updatedCard.id}/`,
+        "PATCH",
+        "unable to update card",
+        updatedCard,
+      ),
 
     onSuccess: (updatedCard) => {
       setCards((previousCards) => ({
@@ -187,21 +172,14 @@ export function useUpdateCard({ setCards }) {
 
 export function useDeleteCard({ setCards }) {
   return useMutation({
-    mutationFn: async (card) => {
-      const response = await fetch(BASE_URL + `card/${card.id}/`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to delete card: ${response.status}`);
-      }
-
-      return card;
-    },
+    mutationFn: (card) =>
+      fetchData(
+        `card/${card.id}/`,
+        "DELETE",
+        "Failed to delete card",
+        card,
+        true,
+      ),
 
     onSuccess: (cardToDelete) => {
       setCards((previousCards) => {
@@ -212,49 +190,12 @@ export function useDeleteCard({ setCards }) {
   });
 }
 
-export function useUpdateBoard({ boardId, setBoard }) {
-  return useMutation({
-    mutationFn: async (updatedBoard) => {
-      const response = await fetch(BASE_URL + `board/${boardId}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify(updatedBoard),
-      });
-
-      if (!response.ok) throw new Error("Failed to update board");
-      return updatedBoard;
-    },
-    onSuccess: (updatedBoard) =>
-      setBoard((previousBoard) => ({
-        ...previousBoard,
-        ...updatedBoard,
-      })),
-  });
-}
-
 export function useUpdateCardPosition() {
   return useMutation({
-    mutationFn: async ({ cardId, cardPosition, cardList }) => {
-      const response = await fetch(BASE_URL + `card/${cardId}/`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-        body: JSON.stringify({
-          position: cardPosition,
-          list: cardList,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update card position");
-      }
-
-      return response.json();
-    },
+    mutationFn: ({ cardId, cardPosition, cardList }) =>
+      fetchData(`card/${cardId}/`, "PATCH", "Failed to update card position", {
+        position: cardPosition,
+        list: cardList,
+      }),
   });
 }
